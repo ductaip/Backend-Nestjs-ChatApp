@@ -20,7 +20,7 @@ model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
-  name      String?
+  name      String
   avatarUrl String?
   // lastSeen  DateTime?
   createdAt DateTime @default(now())
