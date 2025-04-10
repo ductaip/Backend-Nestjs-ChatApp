@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { SharedModule } from './shared/shared.module';
 import { APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
+import CustomZodValidationPipe from './shared/pipes/custom-zod-validation.pipe';
 
 @Module({
   imports: [SharedModule],
@@ -12,7 +13,7 @@ import { ZodValidationPipe } from 'nestjs-zod';
     AppService,
     {
       provide: APP_PIPE,
-      useClass: ZodValidationPipe,
+      useClass: CustomZodValidationPipe,
     },
   ],
 })
