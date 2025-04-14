@@ -45,15 +45,10 @@ export class ConversationRepo {
   }
 
   //create new conversation
-  async createConversation(
-    currentUserId: number,
-    participantId: number,
-    name: string,
-  ) {
+  async createConversation(currentUserId: number, participantId: number) {
     return this.prismaService.conversation.create({
       data: {
         isGroup: false,
-        name,
         participants: {
           create: [
             { userId: currentUserId, isAdmin: false },

@@ -25,7 +25,6 @@ export class ConversationController {
     const conversation = await this.conversationService.createConversation(
       currentUserId,
       body.participantId,
-      body.name,
     );
 
     return conversation;

@@ -6,8 +6,8 @@ import { createZodDto } from 'nestjs-zod';
 export const CreateConversationBodySchema = z
   .object({
     isGroup: z.boolean().default(false),
-    name: z.string(),
     participantId: z.number(),
+    name: z.string().optional(),
   })
   .strict()
   .refine(

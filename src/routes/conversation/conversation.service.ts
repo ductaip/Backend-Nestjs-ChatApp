@@ -10,11 +10,7 @@ export class ConversationService {
   ) {}
 
   //
-  async createConversation(
-    currentUserId: number,
-    participantId: number,
-    name: string,
-  ) {
+  async createConversation(currentUserId: number, participantId: number) {
     // Kiểm tra participantId hợp lệ
     if (currentUserId === participantId)
       throw new UnprocessableEntityException('User id is invalid');
@@ -37,7 +33,6 @@ export class ConversationService {
     const conversation = await this.conversationRepo.createConversation(
       currentUserId,
       participantId,
-      name,
     );
     return conversation;
   }
