@@ -10,7 +10,11 @@ export class ConversationService {
   ) {}
 
   //
-  async createConversation(currentUserId: number, participantId: number) {
+  async createConversation(
+    currentUserId: number,
+    participantId: number,
+    name: string,
+  ) {
     // Kiểm tra participantId hợp lệ
     if (currentUserId === participantId)
       throw new UnprocessableEntityException('User id is invalid');
@@ -21,6 +25,21 @@ export class ConversationService {
     });
     if (!participant)
       throw new UnprocessableEntityException('Participant is not found');
+
+    const existingConversation =
+      await this.conversationRepo.findExistConversation(
+        currentUserId,
+        participantId,
+      );
+    if (existingConversation)
+      throw new UnprocessableEntityException('Conversation is existed');
+
+    const conversation = await this.conversationRepo.createConversation(
+      currentUserId,
+      participantId,
+      name,
+    );
+    return conversation;
   }
 
   //

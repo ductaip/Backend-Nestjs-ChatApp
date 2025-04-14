@@ -6,9 +6,10 @@ import { createZodDto } from 'nestjs-zod';
 export const CreateConversationBodySchema = z
   .object({
     isGroup: z.boolean().default(false),
-    name: z.string().optional(),
+    name: z.string(),
     participantId: z.number(),
   })
+  .strict()
   .refine(
     (data) => {
       if (data.isGroup && !data.name) {
@@ -24,8 +25,7 @@ export const CreateConversationBodySchema = z
 
 // DTO cho phản hồi cuộc trò chuyện (response)
 export const ConversationResSchema = ConversationSchema.extend({
-  lastMessageContent: z.string().nullable(),
-  participantsCount: z.number(),
+  lastMessage: z.string().nullable(),
 });
 
 export type CreateConversationBodyType = z.infer<
