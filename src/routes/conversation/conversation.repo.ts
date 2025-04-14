@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()
-export class AuthRepository {
+export class ConversationRepo {
   constructor(private readonly prismaService: PrismaService) {}
 
   //get all my conversations

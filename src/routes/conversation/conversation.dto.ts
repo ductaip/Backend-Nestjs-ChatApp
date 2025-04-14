@@ -7,7 +7,7 @@ export const CreateConversationBodySchema = z
   .object({
     isGroup: z.boolean().default(false),
     name: z.string().optional(),
-    participantsIds: z.array(z.number()),
+    participantId: z.number(),
   })
   .refine(
     (data) => {
