@@ -98,7 +98,7 @@ model Message {
 // Model cho cuộc trò chuyện (có thể là riêng tư hoặc nhóm)
 model Conversation {
   id            Int      @id @default(autoincrement())
-  name          String?  // Group name (null for private chats)
+  name          String  // Group name (null for private chats)
   isGroup       Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
