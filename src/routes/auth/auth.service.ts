@@ -13,6 +13,13 @@ import {
 import { HashingService } from 'src/shared/services/hashing.service';
 import { AccessTokenPayloadCreate } from 'src/shared/types/jwt.type';
 import { TokenService } from 'src/shared/services/token.service';
+import {
+  EmailIsExistException,
+  PasswordIsIncorrectException,
+  RefreshTokenIsIncorrectException,
+  RefreshTokenIsUsedException,
+  EmailNotFoundException,
+} from './auth.error';
 
 @Injectable()
 export class AuthService {
@@ -29,14 +36,7 @@ export class AuthService {
         email: body.email,
       });
 
-      if (user) {
-        throw new UnprocessableEntityException([
-          {
-            message: 'Email is exist',
-            path: 'email',
-          },
-        ]);
-      }
+      if (user) throw EmailIsExistException;
 
       return await this.authRepository.createUser({
         email: body.email,
@@ -44,12 +44,7 @@ export class AuthService {
         password: hashedPassword,
       });
     } catch (error) {
-      throw new UnprocessableEntityException([
-        {
-          message: 'Email is exist',
-          path: 'email',
-        },
-      ]);
+      throw EmailIsExistException;
     }
   }
 
@@ -57,27 +52,13 @@ export class AuthService {
     const user = await this.authRepository.findUniqueUser({
       email: body.email,
     });
-    if (!user) {
-      throw new UnprocessableEntityException([
-        {
-          message: 'User is not exist',
-          path: 'email',
-        },
-      ]);
-    }
+    if (!user) throw EmailNotFoundException;
 
     const isPasswordCorrect = await this.hashingService.compare(
       body.password,
       user.password,
     );
-    if (!isPasswordCorrect) {
-      throw new UnprocessableEntityException([
-        {
-          message: 'Password is incorrect',
-          path: 'password',
-        },
-      ]);
-    }
+    if (!isPasswordCorrect) throw PasswordIsIncorrectException;
 
     const tokens = await this.generateTokens({
       email: body.email,
@@ -116,9 +97,7 @@ export class AuthService {
       const { userId } = await this.tokenService.verifyRefreshToken(
         body.refreshToken,
       );
-      if (!userId) {
-        throw new UnauthorizedException('Refresh token is incorrect');
-      }
+      if (!userId) throw RefreshTokenIsIncorrectException;
 
       // 2. Check that refresh token is in db
       const refreshTokenInDb = await this.authRepository.findUniqueRefreshToken(
@@ -126,8 +105,7 @@ export class AuthService {
           token: body.refreshToken,
         },
       );
-      if (!refreshTokenInDb)
-        throw new UnauthorizedException('Refresh token has been used');
+      if (!refreshTokenInDb) throw RefreshTokenIsUsedException;
 
       const tokens = this.generateTokens({
         userId,
@@ -141,7 +119,7 @@ export class AuthService {
 
       return tokens;
     } catch (error) {
-      throw new UnauthorizedException('Refresh token is not exist');
+      throw RefreshTokenIsIncorrectException;
     }
   }
 
@@ -149,16 +127,13 @@ export class AuthService {
     const { userId } = await this.tokenService.verifyRefreshToken(
       body.refreshToken,
     );
-    if (!userId) {
-      throw new UnauthorizedException('Refresh token is incorrect');
-    }
+    if (!userId) throw RefreshTokenIsIncorrectException;
 
     //  Check that refresh token is in db
     const refreshTokenInDb = await this.authRepository.findUniqueRefreshToken({
       token: body.refreshToken,
     });
-    if (!refreshTokenInDb)
-      throw new UnauthorizedException('Refresh token is invalid');
+    if (!refreshTokenInDb) throw RefreshTokenIsUsedException;
     await this.authRepository.deleteRefreshToken({
       token: body.refreshToken,
     });
