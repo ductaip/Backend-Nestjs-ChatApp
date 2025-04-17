@@ -7,6 +7,7 @@ export class MessagesService {
 
   async sendMessage(conversationId: number, senderId: number, content: string) {
     // Kiểm tra quyền tham gia cuộc trò chuyện
+    console.log('get message>>>>', conversationId);
     const isParticipant = await this.messageRepo.isParticipant(
       senderId,
       conversationId,

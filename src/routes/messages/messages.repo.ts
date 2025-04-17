@@ -40,6 +40,7 @@ export class MessageRepo {
     userId: number,
     conversationId: number,
   ): Promise<boolean> {
+    console.log('check repo>>', userId, conversationId);
     const conversation = await this.prismaService.conversation.findUnique({
       where: {
         isGroup: false,
