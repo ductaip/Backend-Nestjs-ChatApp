@@ -73,4 +73,22 @@ export class ConversationRepo {
       },
     });
   }
+
+  async isParticipant(
+    userId: number,
+    conversationId: number,
+  ): Promise<boolean> {
+    const conversation = await this.prismaService.conversation.findUnique({
+      where: {
+        isGroup: false,
+        participants: {
+          some: {
+            userId,
+          },
+        },
+        id: conversationId,
+      },
+    });
+    return !!conversation; // Chuyển kết quả thành boolean (true nếu có conversation, false nếu null)
+  }
 }
