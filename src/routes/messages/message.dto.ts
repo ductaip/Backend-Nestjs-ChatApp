@@ -1,20 +1,23 @@
 import { z } from 'zod';
-import { MessageSchema } from 'src/shared/models/shared-message.model';
 import { createZodDto } from 'nestjs-zod';
 
-export const CreateMessageBodySchema = z
-  .object({
-    content: z.string().min(1),
-    conversationId: z.number().optional(),
-    groupId: z.number().optional(),
-  })
-  .refine(
-    (data) => data.conversationId !== undefined || data.groupId !== undefined,
-    {
-      message: 'Phải cung cấp conversationId hoặc groupId',
-      path: ['conversationId', 'groupId'],
-    },
-  );
+export const MessageSchema = z.object({
+  id: z.number(),
+  content: z.string(),
+  senderId: z.number(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  groupId: z.number().nullable(),
+  conversationId: z.number().nullable(),
+});
+
+export type MessageType = z.infer<typeof MessageSchema>;
+
+export const CreateMessageBodySchema = z.object({
+  content: z.string().min(1),
+  conversationId: z.number(),
+  senderId: z.number(),
+});
 
 export const MessageResSchema = MessageSchema.extend({
   senderName: z.string(),

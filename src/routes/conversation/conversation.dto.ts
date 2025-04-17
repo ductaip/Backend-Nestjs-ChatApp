@@ -1,6 +1,16 @@
 import { z } from 'zod';
-import { ConversationSchema } from 'src/shared/models/shared-conversation.model';
 import { createZodDto } from 'nestjs-zod';
+
+export const ConversationSchema = z.object({
+  id: z.number(),
+  name: z.string().nullable(),
+  isGroup: z.boolean(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  lastMessageId: z.number().nullable(),
+});
+
+export type ConversationType = z.infer<typeof ConversationSchema>;
 
 // DTO cho việc tạo cuộc trò chuyện (request body)
 export const CreateConversationBodySchema = z
