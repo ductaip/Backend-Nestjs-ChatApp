@@ -42,14 +42,14 @@ model User {
   readReceipts ReadReceipt[]
 
   // Mối quan hệ với bạn bè (người gửi lời mời)
-  // friendRequestsSent FriendRequest[] @relation("Requester")
+  friendRequestsSent FriendRequest[] @relation("Requester")
 
   // Mối quan hệ với bạn bè (người nhận lời mời)
-  // friendRequestsReceived FriendRequest[] @relation("Recipient")
+  friendRequestsReceived FriendRequest[] @relation("Recipient")
 
   // Mối quan hệ với danh sách bạn bè đã chấp nhận
-  // friends Friend[] @relation("UserA")
-  // friendOf Friend[] @relation("UserB")
+  friends Friend[] @relation("UserA")
+  friendOf Friend[] @relation("UserB")
 
   // Mối quan hệ với nhóm mà người dùng là quản trị viên
   adminOf Group[] @relation("Admin")
@@ -140,31 +140,31 @@ model ReadReceipt {
 }
 
 // Model cho lời mời kết bạn
-// model FriendRequest {
-//   id          Int      @id @default(autoincrement())
-//   requesterId Int
-//   recipientId Int
-//   status      String   @default("pending") // "pending", "accepted", "rejected"
-//   createdAt   DateTime @default(now())
-//   updatedAt   DateTime @updatedAt
+model FriendRequest {
+  id          Int      @id @default(autoincrement())
+  requesterId Int
+  recipientId Int
+  status      String   @default("pending") // "pending", "accepted", "rejected"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-//   requester User @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
-//   recipient User @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  requester User @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipient User @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
 
-//   @@unique([requesterId, recipientId]) // Ngăn chặn gửi nhiều lời mời trùng lặp
-// }
+  @@unique([requesterId, recipientId]) // Ngăn chặn gửi nhiều lời mời trùng lặp
+}
 
 // Model cho danh sách bạn bè đã chấp nhận (sử dụng self-relation)
-// model Friend {
-//   userAId   Int
-//   userBId   Int
-//   createdAt DateTime @default(now())
+model Friend {
+  userAId   Int
+  userBId   Int
+  createdAt DateTime @default(now())
 
-//   userA User @relation("UserA", fields: [userAId], references: [id], onDelete: Cascade)
-//   userB User @relation("UserB", fields: [userBId], references: [id], onDelete: Cascade)
+  userA User @relation("UserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("UserB", fields: [userBId], references: [id], onDelete: Cascade)
 
-//   @@id([userAId, userBId]) // Khóa chính kép để đảm bảo mỗi cặp bạn bè chỉ có một bản ghi
-// }
+  @@id([userAId, userBId]) // Khóa chính kép để đảm bảo mỗi cặp bạn bè chỉ có một bản ghi
+}
 
 // Model cho nhóm chat
 model Group {

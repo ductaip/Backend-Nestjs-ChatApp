@@ -30,7 +30,18 @@ $ npm run start:prod
 $ npx prisma init
 
 # Update database
-$ npx prisma db push
+1. npx prisma migrate dev --create-only
+2. Modify the generated SQL file.
+
+From:
+ALTER TABLE "Profile" DROP COLUMN "biograpy",
+ADD COLUMN  "biography" TEXT NOT NULL;
+
+To:
+-> ALTER TABLE "Profile"
+RENAME COLUMN "biograpy" TO "biography"
+
+3. npx prisma migrate dev
 
 ```
 
