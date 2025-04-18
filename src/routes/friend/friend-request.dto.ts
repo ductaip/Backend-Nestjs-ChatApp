@@ -1,0 +1,42 @@
+import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
+
+export const FriendRequestSchema = z.object({
+  id: z.number(),
+  requesterId: z.number(),
+  recipientId: z.number(),
+  status: z.enum(['pending', 'accepted', 'rejected']),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export type FriendRequestType = z.infer<typeof FriendRequestSchema>;
+
+export const CreateFriendRequestBodySchema = FriendRequestSchema.pick({
+  recipientId: true,
+});
+
+export const UpdateFriendRequestBodySchema = FriendRequestSchema.pick({
+  status: true,
+});
+
+export const FriendRequestResSchema = FriendRequestSchema.extend({
+  requesterName: z.string(),
+  requesterAvatarUrl: z.string().nullable(),
+});
+
+export type CreateFriendRequestBodyType = z.infer<
+  typeof CreateFriendRequestBodySchema
+>;
+export type UpdateFriendRequestBodyType = z.infer<
+  typeof UpdateFriendRequestBodySchema
+>;
+export type FriendRequestResType = z.infer<typeof FriendRequestResSchema>;
+
+export class CreateFriendRequestBodyDTO extends createZodDto(
+  CreateFriendRequestBodySchema,
+) {}
+export class UpdateFriendRequestBodyDTO extends createZodDto(
+  UpdateFriendRequestBodySchema,
+) {}
+export class FriendRequestResDTO extends createZodDto(FriendRequestResSchema) {}
