@@ -66,4 +66,8 @@ export class FriendRequestService {
     }
     return request;
   }
+
+  async getPendingRequests(userId: number) {
+    return await this.friendRequestRepo.findPendingRequests(userId);
+  }
 }

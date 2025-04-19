@@ -12,12 +12,12 @@ export const FriendRequestSchema = z.object({
 
 export type FriendRequestType = z.infer<typeof FriendRequestSchema>;
 
-export const CreateFriendRequestBodySchema = FriendRequestSchema.pick({
-  recipientId: true,
+export const CreateFriendRequestBodySchema = z.object({
+  recipientId: z.number(),
 });
 
-export const UpdateFriendRequestBodySchema = FriendRequestSchema.pick({
-  status: true,
+export const UpdateFriendRequestBodySchema = z.object({
+  status: z.enum(['accepted', 'rejected']),
 });
 
 export const FriendRequestResSchema = FriendRequestSchema.extend({
