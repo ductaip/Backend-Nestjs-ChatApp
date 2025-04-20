@@ -7,10 +7,11 @@ import { ZodSerializerInterceptor } from 'nestjs-zod';
 import { AuthModule } from './routes/auth/auth.module';
 import { ConversationModule } from './routes/conversation/conversation.module';
 import { MessagesModule } from './routes/messages/messages.module';
+import { FriendRequestModule } from './routes/friend/friend-request.module';
 import CustomZodValidationPipe from './shared/pipes/custom-zod-validation.pipe';
 
 @Module({
-  imports: [SharedModule, AuthModule, ConversationModule, MessagesModule],
+  imports: [SharedModule, AuthModule, ConversationModule, MessagesModule, FriendRequestModule],
   controllers: [AppController],
   providers: [
     AppService,
