@@ -13,19 +13,40 @@ export const GroupSchema = z.object({
 
 export type GroupType = z.infer<typeof GroupSchema>;
 
-// DTO cho việc tạo nhóm (request body)
 export const CreateGroupBodySchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  avatarUrl: z.string().url().optional(),
+  avatarUrl: z.string().optional(),
+});
+
+export const AddMemberBodySchema = z.object({
+  userId: z.number(),
 });
 
 export const GroupResSchema = GroupSchema.extend({
-  membersCount: z.number(),
+  admin: z.object({
+    id: z.number(),
+    name: z.string(),
+    avatarUrl: z.string().nullable(),
+  }),
+  members: z.array(
+    z.object({
+      userId: z.number(),
+      role: z.string(),
+      joinedAt: z.date(),
+      user: z.object({
+        id: z.number(),
+        name: z.string(),
+        avatarUrl: z.string().nullable(),
+      }),
+    }),
+  ),
 });
 
 export type CreateGroupBodyType = z.infer<typeof CreateGroupBodySchema>;
+export type AddMemberBodyType = z.infer<typeof AddMemberBodySchema>;
 export type GroupResType = z.infer<typeof GroupResSchema>;
 
 export class CreateGroupBodyDTO extends createZodDto(CreateGroupBodySchema) {}
+export class AddMemberBodyDTO extends createZodDto(AddMemberBodySchema) {}
 export class GroupResDTO extends createZodDto(GroupResSchema) {}
