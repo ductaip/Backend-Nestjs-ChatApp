@@ -9,7 +9,9 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { TokenService } from 'src/shared/services/token.service';
 import { ConversationRepo } from '../conversation/conversation.repo';
-import { MessagesService } from './messages.service';
+import { MessagesService } from '../messages/messages.service';
+import { GroupRepo } from '../group/group.repo';
+import { AccessTokenPayload } from 'src/shared/types/jwt.type';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -19,13 +21,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly tokenService: TokenService,
     private readonly conversationRepo: ConversationRepo,
+    private readonly groupRepo: GroupRepo,
     private readonly messagesService: MessagesService,
   ) {}
 
   async handleConnection(client: Socket) {
-    console.log('run>>', client.handshake);
     const token = client.handshake.headers.authorization?.split('Bearer ')[1];
-    console.log('token>>>', token);
     const user = await this.tokenService.verifyAccessToken(token as string);
     if (!user) {
       client.disconnect();
@@ -33,6 +34,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     client.data.user = user;
 
+    // Join conversation rooms
     const conversations = await this.conversationRepo.getConversationList(
       user.userId,
     );
@@ -40,8 +42,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.join(`conversation_${convo.id}`);
     });
 
+    // Join group rooms
+    const groups = await this.groupRepo.getGroupsForUser(user.userId);
+    groups.forEach((group) => {
+      client.join(`group_${group.id}`);
+    });
+
     this.logger.log(
-      `User ${user.userId} connected and joined ${conversations.length} conversations`,
+      `User ${user.userId} connected and joined ${conversations.length} conversations and ${groups.length} groups`,
     );
   }
 
@@ -52,22 +60,50 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     client: Socket,
-    data: { conversationId: number; content: string },
+    data: {
+      roomType: 'conversation' | 'group';
+      roomId: number;
+      content: string;
+    },
   ) {
-    const user = client.data.user;
+    const user = client.data.user as AccessTokenPayload;
     if (!user) {
       client.emit('error', 'Not authenticated');
       return;
     }
 
+    if (data.roomType === 'conversation') {
+      const conversation = await this.conversationRepo.findConversationById(
+        data.roomId,
+      );
+      const isAuthorized = await this.conversationRepo.isParticipant(
+        user.userId,
+        data.roomId,
+      );
+      if (!isAuthorized || !conversation) {
+        client.emit('error', 'Not authorized to send message to this room');
+        return;
+      }
+    } else if (data.roomType === 'group') {
+      const group = await this.groupRepo.getGroupById(data.roomId);
+      const isAuthorized = await this.groupRepo.isMember(
+        user.userId,
+        data.roomId,
+      );
+      if (!isAuthorized || !group) {
+        client.emit('error', 'Not authorized to send message to this room');
+        return;
+      }
+    }
+
     const message = await this.messagesService.sendMessage(
-      data.conversationId,
+      data.roomId,
       user.userId,
       data.content,
     );
 
     this.server
-      .to(`conversation_${data.conversationId}`)
+      .to(`${data.roomType}_${data.roomId}`)
       .emit('newMessage', message);
   }
 }

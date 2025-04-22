@@ -15,8 +15,12 @@ export type GroupType = z.infer<typeof GroupSchema>;
 
 export const CreateGroupBodySchema = z.object({
   name: z.string().min(1),
-  description: z.string().optional(),
-  avatarUrl: z.string().optional(),
+  description: z.string().default('New Group'),
+  avatarUrl: z
+    .string()
+    .default(
+      'https://i.pinimg.com/736x/9c/17/6f/9c176f461b01c2e6396d25e7107719ce.jpg',
+    ),
 });
 
 export const AddMemberBodySchema = z.object({
