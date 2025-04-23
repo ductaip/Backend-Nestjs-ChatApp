@@ -8,10 +8,11 @@ import { AuthModule } from './routes/auth/auth.module';
 import { ConversationModule } from './routes/conversation/conversation.module';
 import { MessagesModule } from './routes/messages/messages.module';
 import { FriendRequestModule } from './routes/friend/friend-request.module';
+import { GroupModule } from './routes/group/group.module';
 import CustomZodValidationPipe from './shared/pipes/custom-zod-validation.pipe';
 
 @Module({
-  imports: [SharedModule, AuthModule, ConversationModule, MessagesModule, FriendRequestModule],
+  imports: [SharedModule, AuthModule, ConversationModule, MessagesModule, FriendRequestModule, GroupModule],
   controllers: [AppController],
   providers: [
     AppService,
