@@ -29,7 +29,7 @@ export class FriendRequestController {
   ) {
     return this.friendRequestService.sendRequest(
       requesterId,
-      createDto.recipientId,
+      createDto.recipientEmail,
     );
   }
 

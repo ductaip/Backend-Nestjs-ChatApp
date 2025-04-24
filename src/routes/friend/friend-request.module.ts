@@ -3,9 +3,16 @@ import { FriendRequestService } from './friend-request.service';
 // import { FriendRequestController } from './friend-request.controller';
 import { FriendRequestRepo } from './friend-request.repo';
 import { FriendRequestGateway } from './friend-request.gateway';
+import { AuthRepository } from '../auth/auth.repo';
+import { FriendRequestController } from './friend-request.controller';
 
 @Module({
-  providers: [FriendRequestService, FriendRequestRepo, FriendRequestGateway],
-  controllers: [],
+  providers: [
+    FriendRequestService,
+    FriendRequestRepo,
+    FriendRequestGateway,
+    AuthRepository,
+  ],
+  controllers: [FriendRequestController],
 })
 export class FriendRequestModule {}

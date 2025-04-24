@@ -44,19 +44,22 @@ export class FriendRequestGateway
   }
 
   @SubscribeMessage('sendFriendRequest')
-  async handleSendFriendRequest(client: Socket, data: { receiverId: number }) {
+  async handleSendFriendRequest(
+    client: Socket,
+    data: { recipientEmail: string },
+  ) {
     const user = client.data.user;
     if (!user) {
       client.emit('error', 'Not authenticated');
       return;
     }
-    console.log('>>receiver', data.receiverId);
+    console.log('>>receiver', data.recipientEmail);
     const request = await this.friendRequestService.sendRequest(
       user.userId,
-      data.receiverId,
+      data.recipientEmail,
     );
     this.server
-      .to(`user_${data.receiverId}`)
+      .to(`user_${request?.recipientId}`)
       .emit('friendRequestReceived', request);
   }
 
@@ -69,6 +72,11 @@ export class FriendRequestGateway
     }
     const request = await this.friendRequestService.getRequestById(
       data.requestId,
+    );
+    console.log(
+      'accept friend request run ',
+      request.recipientId,
+      request.requesterId,
     );
     if (!request || request.recipientId !== user.userId) {
       client.emit('error', 'Invalid request');

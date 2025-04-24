@@ -13,7 +13,7 @@ export const FriendRequestSchema = z.object({
 export type FriendRequestType = z.infer<typeof FriendRequestSchema>;
 
 export const CreateFriendRequestBodySchema = z.object({
-  recipientId: z.number(),
+  recipientEmail: z.string(),
 });
 
 export const UpdateFriendRequestBodySchema = z.object({
