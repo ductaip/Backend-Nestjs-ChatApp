@@ -61,6 +61,11 @@ export class FriendRequestRepo {
         recipientId: userId,
         status: 'pending',
       },
+      include: {
+        requester: {
+          omit: { password: true, createdAt: true, updatedAt: true },
+        },
+      },
     });
   }
 

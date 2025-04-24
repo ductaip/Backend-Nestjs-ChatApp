@@ -1,38 +1,48 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { FriendRequestRepo } from './friend-request.repo';
+import { AuthRepository } from '../auth/auth.repo';
 
 @Injectable()
 export class FriendRequestService {
-  constructor(private readonly friendRequestRepo: FriendRequestRepo) {}
+  constructor(
+    private readonly friendRequestRepo: FriendRequestRepo,
+    private readonly authRepository: AuthRepository,
+  ) {}
 
-  async sendRequest(senderId: number, receiverId: number) {
-    if (senderId === receiverId) {
-      throw new HttpException(
-        'Cannot send friend request to yourself',
-        HttpStatus.BAD_REQUEST,
+  async sendRequest(senderId: number, recipientEmail: string) {
+    const recipient = await this.authRepository.findUniqueUser({
+      email: recipientEmail,
+    });
+    if (recipient && recipient.id) {
+      const receiverId = recipient.id;
+      if (senderId === receiverId) {
+        throw new HttpException(
+          'Cannot send friend request to yourself',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const existingRequest = await this.friendRequestRepo.findExistingRequest(
+        senderId,
+        receiverId,
       );
-    }
+      if (existingRequest) {
+        throw new HttpException(
+          'Friend request already sent',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-    const existingRequest = await this.friendRequestRepo.findExistingRequest(
-      senderId,
-      receiverId,
-    );
-    if (existingRequest) {
-      throw new HttpException(
-        'Friend request already sent',
-        HttpStatus.BAD_REQUEST,
+      const friendship = await this.friendRequestRepo.checkExistingFriendship(
+        senderId,
+        receiverId,
       );
-    }
+      if (friendship) {
+        throw new HttpException('Already friends', HttpStatus.BAD_REQUEST);
+      }
 
-    const friendship = await this.friendRequestRepo.checkExistingFriendship(
-      senderId,
-      receiverId,
-    );
-    if (friendship) {
-      throw new HttpException('Already friends', HttpStatus.BAD_REQUEST);
+      return this.friendRequestRepo.createRequest(senderId, receiverId);
     }
-
-    return this.friendRequestRepo.createRequest(senderId, receiverId);
   }
 
   async acceptRequest(requestId: number, receiverId: number) {
