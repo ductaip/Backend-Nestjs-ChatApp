@@ -1,13 +1,15 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { FriendRequestRepo } from './friend-request.repo';
 import { AuthRepository } from '../auth/auth.repo';
+import { ConversationService } from '../conversation/conversation.service';
 
 @Injectable()
 export class FriendRequestService {
   constructor(
+    private readonly conservationService: ConversationService,
     private readonly friendRequestRepo: FriendRequestRepo,
     private readonly authRepository: AuthRepository,
-  ) {}
+  ) { }
 
   async sendRequest(senderId: number, recipientEmail: string) {
     const recipient = await this.authRepository.findUniqueUser({
@@ -54,7 +56,15 @@ export class FriendRequestService {
     ) {
       throw new HttpException('Invalid friend request', HttpStatus.BAD_REQUEST);
     }
-    return this.friendRequestRepo.acceptRequest(requestId, receiverId);
+
+
+    const response = await this.friendRequestRepo.acceptRequest(requestId, receiverId);
+    const { userAId, userBId } = response;
+
+    // Create conversation
+    const conversation = await this.conservationService.createConversation(userAId, userBId);
+
+    return { ...response, conversationId: conversation.id };
   }
 
   async rejectRequest(requestId: number, receiverId: number) {

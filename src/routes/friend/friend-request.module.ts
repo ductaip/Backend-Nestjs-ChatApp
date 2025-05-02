@@ -5,6 +5,8 @@ import { FriendRequestRepo } from './friend-request.repo';
 import { FriendRequestGateway } from './friend-request.gateway';
 import { AuthRepository } from '../auth/auth.repo';
 import { FriendRequestController } from './friend-request.controller';
+import { ConversationService } from '../conversation/conversation.service';
+import { ConversationRepo } from '../conversation/conversation.repo';
 
 @Module({
   providers: [
@@ -12,6 +14,8 @@ import { FriendRequestController } from './friend-request.controller';
     FriendRequestRepo,
     FriendRequestGateway,
     AuthRepository,
+    ConversationService,
+    ConversationRepo,
   ],
   controllers: [FriendRequestController],
 })
