@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ZodSerializerDto } from 'nestjs-zod';
 import {
@@ -10,10 +10,13 @@ import {
   RegisterBodyDTO,
   RegisterResDTO,
 } from './auth.dto';
+import { ActiveUser } from 'src/shared/decorators/active-user.decorator';
+import { UserSchema } from 'src/shared/models/shared-user.model';
+import { AccessTokenGuard } from 'src/shared/guards/access-token.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   @ZodSerializerDto(RegisterResDTO)
@@ -37,4 +40,6 @@ export class AuthController {
   async logout(@Body() body: LogoutBodyDTO) {
     return await this.authService.logout(body);
   }
+
+  
 }

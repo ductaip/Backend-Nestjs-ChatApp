@@ -41,6 +41,7 @@ export class FriendRequestController {
     @Body() updateDto: UpdateFriendRequestBodyDTO,
   ) {
     const requestId = Number(id);
+    
     if (updateDto.status === 'accepted') {
       return this.friendRequestService.acceptRequest(requestId, recipientId);
     } else if (updateDto.status === 'rejected') {

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { AccessTokenGuard } from 'src/shared/guards/access-token.guard';
 import { APIKeyGuard } from 'src/shared/guards/api-key.guard';
@@ -15,7 +15,7 @@ export class ConversationController {
 
   @Post()
   @UseGuards(AccessTokenGuard)
-  @UseGuards(APIKeyGuard)
+  // @UseGuards(APIKeyGuard)
   // @ZodSerializerDto(ConversationResDTO)
   async createConversation(
     @ActiveUser('userId') currentUserId: number,
@@ -28,5 +28,16 @@ export class ConversationController {
     );
 
     return conversation;
+  }
+
+  @Get()
+  @UseGuards(AccessTokenGuard)
+  async getConversations(
+    @ActiveUser('userId') currentUserId: number,
+  ) {
+
+    const conversations = await this.conversationService.getConversations(currentUserId);
+
+    return conversations;
   }
 }

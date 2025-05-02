@@ -19,6 +19,7 @@ export class ConversationService {
     const participant = await this.authRepository.findUniqueUser({
       id: participantId,
     });
+
     if (!participant)
       throw new UnprocessableEntityException('Participant is not found');
 
@@ -27,6 +28,7 @@ export class ConversationService {
         currentUserId,
         participantId,
       );
+
     if (existingConversation)
       throw new UnprocessableEntityException('Conversation is existed');
 
@@ -34,8 +36,15 @@ export class ConversationService {
       currentUserId,
       participantId,
     );
+
     return conversation;
   }
 
   //
+  async getConversations(currentUserId: number) {
+    const conversations = await this.conversationRepo.getConversationList(
+      currentUserId,
+    );
+    return conversations;
+  }
 }
