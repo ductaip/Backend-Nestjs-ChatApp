@@ -32,6 +32,7 @@ export class ConversationController {
 
   @Get()
   @UseGuards(AccessTokenGuard)
+  @ZodSerializerDto(ConversationResDTO)
   async getConversations(
     @ActiveUser('userId') currentUserId: number,
   ) {

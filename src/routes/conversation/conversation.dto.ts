@@ -1,5 +1,8 @@
 import { z } from 'zod';
 import { createZodDto } from 'nestjs-zod';
+import { UserResDTO } from '../user/user.dto';
+import { UserSchema } from 'src/shared/models/shared-user.model';
+import { UserResSchema } from '../user/user.model';
 
 export const ConversationSchema = z.object({
   id: z.number(),
@@ -33,9 +36,21 @@ export const CreateConversationBodySchema = z
     },
   );
 
+
+export const ParticipantSchema = z.object({
+  userId: z.number(),
+  conversationId: z.number(),
+  joinedAt: z.date(),
+  isAdmin: z.boolean(),
+  user: UserResSchema,
+});
+
 // DTO cho phản hồi cuộc trò chuyện (response)
 export const ConversationResSchema = ConversationSchema.extend({
-  lastMessage: z.string().nullable(),
+  lastMessage: z.unknown().nullable(),
+  // lastMessage: z.string().nullable(),
+  // participants: z.unknown().array(),
+  participants: z.array(ParticipantSchema),
 });
 
 export type CreateConversationBodyType = z.infer<
@@ -45,5 +60,5 @@ export type ConversationResType = z.infer<typeof ConversationResSchema>;
 
 export class CreateConversationBodyDTO extends createZodDto(
   CreateConversationBodySchema,
-) {}
-export class ConversationResDTO extends createZodDto(ConversationResSchema) {}
+) { }
+export class ConversationResDTO extends createZodDto(ConversationResSchema) { }
