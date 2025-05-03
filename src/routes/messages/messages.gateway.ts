@@ -33,7 +33,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
     client.data.user = user;
-
+ 
     // Join conversation rooms
     const conversations = await this.conversationRepo.getConversationList(
       user.userId,

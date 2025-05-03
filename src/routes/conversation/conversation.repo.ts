@@ -19,14 +19,7 @@ export class ConversationRepo {
       include: {
         participants: {
           include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatarUrl: true,
-              },
-            },
+            user: true
           },
         },
         lastMessage: true,
@@ -120,5 +113,18 @@ export class ConversationRepo {
         lastMessage: true,
       },
     });
+  }
+  
+  // Cập nhật cuộc trò chuyện với tin nhắn cuối cùng
+  async updateLastMessage(conversationId: number, messageId: number) {
+    return this.prismaService.conversation.update({
+      where: {
+        id: conversationId,
+      },
+      data: {
+        lastMessageId: messageId,
+      },
+    }
+    )
   }
 }
