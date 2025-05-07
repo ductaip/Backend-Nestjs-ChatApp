@@ -72,6 +72,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
+    // TODO: fix bug app crash khi không xác thực thành công
+
     if (data.roomType === 'conversation') {
       const conversation = await this.conversationRepo.findConversationById(
         data.roomId,

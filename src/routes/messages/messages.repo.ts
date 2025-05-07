@@ -34,8 +34,9 @@ export class MessageRepo {
     return this.prismaService.message.create({
       data,
     });
-  }
+  } 
 
+  // TODO: cần refactor lại đoạn này
   async isParticipant(
     userId: number,
     conversationId: number,

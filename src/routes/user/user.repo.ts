@@ -13,4 +13,64 @@ export class UserRepository {
                where,
           },);
      }
+
+     async findFriend(
+          where: { email: string } | { id: number },
+          currentUserId: number
+     ): Promise<UserType | null> {
+          console.log(where);
+
+          return await this.prismaService.user.findUnique({
+               where,
+               include: {
+                    friendOf: {
+                         where:
+                              { userAId: currentUserId },
+                    },
+                    friends: {
+                         where:
+                              { userBId: currentUserId }
+
+                    },
+                    friendRequestsReceived: {
+                         where: {
+                              requesterId: currentUserId
+                         }
+                    }
+               }
+          },);
+     }
+
+     async getFriends(where: { email: string } | { id: number },
+     ) {
+          return await this.prismaService.user.findUnique({
+               where,
+               include: {
+                    friends: {
+                         include: {
+                              // userA: true,
+                              userB: true,
+                         }
+                    },
+                    friendOf: {
+                         include: {
+                              userA: true,
+                              // userB: true,
+                         }
+                    },
+                    friendRequestsReceived: {
+                         where:{
+                              status: "pending"
+                         },
+                         include: {
+                              requester: {
+                                   omit: {
+                                        password: true
+                                   }
+                              }
+                         }
+                    }
+               }
+          },);
+     }
 }

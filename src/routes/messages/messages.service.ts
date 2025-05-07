@@ -26,6 +26,8 @@ export class MessagesService {
       senderId,
       content,
     });
+ 
+    // TODO: Mã hóa tin nhắn
 
     // Cập nhật Tin nhắn cuối cùng trong cuộc trò chuyện
     await this.conversationRepo.updateLastMessage(conversationId, message.id);
