@@ -25,7 +25,8 @@ export class GroupController {
       body.name,
       body.description,
       body.avatarUrl,
-      adminId,
+      body.members,
+      adminId,      
     );
   }
 

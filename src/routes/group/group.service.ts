@@ -3,15 +3,25 @@ import { GroupRepo } from './group.repo';
 
 @Injectable()
 export class GroupService {
-  constructor(private readonly groupRepo: GroupRepo) {}
+  constructor(private readonly groupRepo: GroupRepo) { }
 
   async createGroup(
     name: string,
     description: string | null,
     avatarUrl: string | null,
+    members: number[], // user id
     adminId: number,
   ) {
-    return this.groupRepo.createGroup(name, description, avatarUrl, adminId);
+    // mapping
+    const _members: {
+      userId: number,
+      role: "member"
+    }[] = members.map((value: number) => ({
+      userId: value,
+      role: "member"
+    }))
+
+    return this.groupRepo.createGroup(name, description, avatarUrl, _members, adminId);
   }
 
   async addMemberToGroup(

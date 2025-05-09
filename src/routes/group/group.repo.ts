@@ -9,6 +9,10 @@ export class GroupRepo {
     name: string,
     description: string | null,
     avatarUrl: string | null,
+    members: {
+      userId: number,
+      role: 'member',      
+    }[],
     adminId: number,
   ) {
     return this.prisma.group.create({
@@ -20,10 +24,10 @@ export class GroupRepo {
           connect: { id: adminId },
         },
         members: {
-          create: {
+          create: [{
             userId: adminId,
             role: 'admin',
-          },
+          }, ...members],
         },
       },
       include: {
