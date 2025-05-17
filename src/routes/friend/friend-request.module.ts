@@ -7,6 +7,7 @@ import { AuthRepository } from '../auth/auth.repo';
 import { FriendRequestController } from './friend-request.controller';
 import { ConversationService } from '../conversation/conversation.service';
 import { ConversationRepo } from '../conversation/conversation.repo';
+import { GroupRepo } from '../group/group.repo';
 
 @Module({
   providers: [
@@ -16,6 +17,7 @@ import { ConversationRepo } from '../conversation/conversation.repo';
     AuthRepository,
     ConversationService,
     ConversationRepo,
+    GroupRepo
   ],
   controllers: [FriendRequestController],
 })

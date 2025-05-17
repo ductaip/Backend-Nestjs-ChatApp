@@ -1,9 +1,13 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { GroupRepo } from './group.repo';
+import { ConversationService } from '../conversation/conversation.service';
 
 @Injectable()
 export class GroupService {
-  constructor(private readonly groupRepo: GroupRepo) { }
+  constructor(
+    private readonly groupRepo: GroupRepo,
+    private readonly conversationService: ConversationService
+  ) { }
 
   async createGroup(
     name: string,
@@ -21,7 +25,10 @@ export class GroupService {
       role: "member"
     }))
 
-    return this.groupRepo.createGroup(name, description, avatarUrl, _members, adminId);
+    const group = await this.groupRepo.createGroup(name, description, avatarUrl, _members, adminId);
+    const conversation = await this.conversationService.createConversationGroup(adminId, group.id);
+
+    return { ...group, conversationId: conversation.id };
   }
 
   async addMemberToGroup(

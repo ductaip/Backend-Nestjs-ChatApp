@@ -12,6 +12,7 @@ import { ConversationRepo } from '../conversation/conversation.repo';
 import { MessagesService } from '../messages/messages.service';
 import { GroupRepo } from '../group/group.repo';
 import { AccessTokenPayload } from 'src/shared/types/jwt.type';
+import { escape } from 'querystring';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -23,7 +24,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly conversationRepo: ConversationRepo,
     private readonly groupRepo: GroupRepo,
     private readonly messagesService: MessagesService,
-  ) {}
+  ) { }
 
   async handleConnection(client: Socket) {
     const token = client.handshake.headers.authorization?.split('Bearer ')[1];
@@ -33,23 +34,30 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
     client.data.user = user;
- 
+
     // Join conversation rooms
     const conversations = await this.conversationRepo.getConversationList(
       user.userId,
     );
+
     conversations.forEach((convo) => {
-      client.join(`conversation_${convo.id}`);
-    });
+      if (!convo.isGroup) {
+        client.join(`conversation_${convo.id}`);
+      }
+      else {
+        client.join(`group_${convo.id}`);
+      }
+    })
 
     // Join group rooms
     const groups = await this.groupRepo.getGroupsForUser(user.userId);
-    groups.forEach((group) => {
-      client.join(`group_${group.id}`);
-    });
+    // groups.forEach((group) => {
+    //   client.join(`group_${group.id}`);
+    // });
 
     this.logger.log(
       `User ${user.userId} connected and joined ${conversations.length} conversations and ${groups.length} groups`,
+      // `User ${user.userId} connected and joined ${conversations.length} conversations`,
     );
   }
 
@@ -66,6 +74,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       content: string;
     },
   ) {
+    console.log(data);
     const user = client.data.user as AccessTokenPayload;
     if (!user) {
       client.emit('error', 'Not authenticated');
@@ -73,11 +82,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // TODO: fix bug app crash khi không xác thực thành công
+    const conversation = await this.conversationRepo.findConversationById(
+      data.roomId,
+    );
 
     if (data.roomType === 'conversation') {
-      const conversation = await this.conversationRepo.findConversationById(
-        data.roomId,
-      );
       const isAuthorized = await this.conversationRepo.isParticipant(
         user.userId,
         data.roomId,
@@ -87,13 +96,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
     } else if (data.roomType === 'group') {
-      const group = await this.groupRepo.getGroupById(data.roomId);
+      // TODO: Refactor!!!
+      const groupId = conversation?.groupId
+
+      if (!groupId || !conversation){
+        client.emit('error', 'Not authorized to send message to this room, group not exist');
+        return;
+      }
+
+      const group = await this.groupRepo.getGroupById(groupId);
+      
       const isAuthorized = await this.groupRepo.isMember(
         user.userId,
-        data.roomId,
+        groupId,
       );
+
       if (!isAuthorized || !group) {
-        client.emit('error', 'Not authorized to send message to this room');
+        client.emit('error', 'Not authorized to send message to this room, you are not a member');
         return;
       }
     }
@@ -107,5 +126,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server
       .to(`${data.roomType}_${data.roomId}`)
       .emit('newMessage', message);
+  }
+
+  @SubscribeMessage("joinRoom")
+  async handleJoinRoom(
+    client: Socket,
+    data: {
+      roomId: string;
+      roomType: "group" | "conversation"
+    },
+  ) {
+    // TODO: check group
+    const { roomId, roomType } = data;
+    const user = client.data.user as AccessTokenPayload;
+    if (!user) {
+      client.emit('error', 'Not authenticated');
+      return;
+    }
+
+    if (roomType === "conversation") {
+      client.join(`conversation_${roomId}`);
+    }
+    else {
+      client.join(`group_${roomId}`);
+
+    }
+
+    this.logger.log(
+      // `User ${user.userId} connected and joined ${conversations.length} conversations and ${groups.length} groups`,
+      `User ${user.userId} connected and joined Room ${roomId}`,
+    );
   }
 }

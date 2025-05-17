@@ -32,7 +32,10 @@ export class MessageRepo {
     conversationId: number;
   }) {
     return this.prismaService.message.create({
-      data,
+      data, 
+      include: {
+        sender: true
+      }
     });
   } 
 
@@ -44,7 +47,7 @@ export class MessageRepo {
     console.log('check repo>>', userId, conversationId);
     const conversation = await this.prismaService.conversation.findUnique({
       where: {
-        isGroup: false,
+        // isGroup: false,
         participants: {
           some: {
             userId,

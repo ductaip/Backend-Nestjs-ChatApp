@@ -19,7 +19,7 @@ export class MessagesService {
     if (!isParticipant) {
       throw new HttpException('User not a participant', HttpStatus.FORBIDDEN);
     }
-
+ 
     // Tạo tin nhắn
     const message = await this.messageRepo.createMessage({
       conversationId,

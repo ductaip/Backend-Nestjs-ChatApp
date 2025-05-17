@@ -3,7 +3,7 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()
 export class GroupRepo {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async createGroup(
     name: string,
@@ -11,7 +11,7 @@ export class GroupRepo {
     avatarUrl: string | null,
     members: {
       userId: number,
-      role: 'member',      
+      role: 'member',
     }[],
     adminId: number,
   ) {
@@ -30,7 +30,8 @@ export class GroupRepo {
           }, ...members],
         },
       },
-      include: {
+      select: {
+        id: true,
         admin: true,
         members: {
           include: {
@@ -38,6 +39,14 @@ export class GroupRepo {
           },
         },
       },
+      // include: {
+      //   admin: true,
+      //   members: {
+      //     include: {
+      //       user: true,
+      //     },
+      //   },
+      // }
     });
   }
 
