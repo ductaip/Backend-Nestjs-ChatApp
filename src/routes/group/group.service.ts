@@ -37,23 +37,29 @@ export class GroupService {
     currentUserId: number,
   ) {
     const group = await this.groupRepo.getGroupById(groupId);
+
     if (!group) {
       throw new HttpException('Group not found', HttpStatus.NOT_FOUND);
     }
+
     const isAdmin = await this.groupRepo.isAdmin(currentUserId, groupId);
+
     if (!isAdmin) {
       throw new HttpException(
         'Only admin can add members',
         HttpStatus.FORBIDDEN,
       );
     }
+    
     const isAlreadyMember = await this.groupRepo.isMember(userIdToAdd, groupId);
+    
     if (isAlreadyMember) {
       throw new HttpException(
         'User is already a member',
         HttpStatus.BAD_REQUEST,
       );
     }
+    
     return this.groupRepo.addMemberToGroup(groupId, userIdToAdd);
   }
 

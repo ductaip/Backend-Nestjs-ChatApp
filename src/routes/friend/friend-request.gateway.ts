@@ -70,24 +70,29 @@ export class FriendRequestGateway
       client.emit('error', 'Not authenticated');
       return;
     }
+
     const request = await this.friendRequestService.getRequestById(
       data.requestId,
     );
+
     console.log(
       'accept friend request run ',
       request.recipientId,
       request.requesterId,
     );
+
     if (!request || request.recipientId !== user.userId) {
       client.emit('error', 'Invalid request');
       return;
     }
+
     const friendship = await this.friendRequestService.acceptRequest(
       data.requestId,
       user.userId,
     );
+
     this.server
-      .to(`user_${request.requesterId}`)
+      .to([`user_${request.requesterId}`, `user_${request.recipientId}`])
       .emit('friendRequestAccepted', friendship);
   }
 

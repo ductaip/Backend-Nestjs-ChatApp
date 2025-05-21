@@ -33,6 +33,7 @@ export class GroupRepo {
       select: {
         id: true,
         admin: true,
+        name: true,
         members: {
           include: {
             user: true,
