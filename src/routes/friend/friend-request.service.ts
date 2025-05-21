@@ -57,7 +57,6 @@ export class FriendRequestService {
       throw new HttpException('Invalid friend request', HttpStatus.BAD_REQUEST);
     }
 
-
     const response = await this.friendRequestRepo.acceptRequest(requestId, receiverId);
     const { userAId, userBId } = response;
 
@@ -90,4 +89,5 @@ export class FriendRequestService {
   async getPendingRequests(userId: number) {
     return await this.friendRequestRepo.findPendingRequests(userId);
   }
+
 }

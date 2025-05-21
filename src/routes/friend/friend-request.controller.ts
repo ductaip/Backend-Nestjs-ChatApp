@@ -55,5 +55,5 @@ export class FriendRequestController {
   @UseGuards(AccessTokenGuard)
   async getPendingRequests(@ActiveUser('userId') userId: number) {
     return this.friendRequestService.getPendingRequests(userId);
-  }
+  }  
 }

@@ -6,7 +6,7 @@ import {
   Body,
   Req,
   UseGuards,
-  Delete,
+  Delete,  
 } from '@nestjs/common';
 import { GroupService } from './group.service';
 import { CreateGroupBodyDTO, AddMemberBodyDTO } from './group.dto';
@@ -25,7 +25,8 @@ export class GroupController {
       body.name,
       body.description,
       body.avatarUrl,
-      adminId,
+      body.members,
+      adminId,      
     );
   }
 

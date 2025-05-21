@@ -3,7 +3,7 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()
 export class ConversationRepo {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) { }
 
   // Lấy danh sách các cuộc trò chuyện của người dùng
   async getConversationList(userId: number) {
@@ -14,7 +14,6 @@ export class ConversationRepo {
             userId,
           },
         },
-        isGroup: false,
       },
       include: {
         participants: {
@@ -73,6 +72,44 @@ export class ConversationRepo {
     });
   }
 
+  async createConversationGroup(adminId: number, participants: number[], name: string, groupId: number) {
+    return this.prismaService.conversation.create({
+      data: {
+        name,
+        isGroup: true,
+        group: {
+          connect: {
+            id: groupId
+          }
+        },
+        participants: {
+          create: [
+            { userId: adminId, isAdmin: true },
+            ...participants.map((p) => ({
+              userId: p,
+              isAdmin: false
+            })),
+          ],
+        },
+      },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+        lastMessage: true,
+      },
+    });
+  }
+
   // Kiểm tra người dùng có phải là thành viên của cuộc trò chuyện
   async isParticipant(
     userId: number,
@@ -110,11 +147,11 @@ export class ConversationRepo {
             },
           },
         },
-        lastMessage: true,
+        lastMessage: true
       },
     });
   }
-  
+
   // Cập nhật cuộc trò chuyện với tin nhắn cuối cùng
   async updateLastMessage(conversationId: number, messageId: number) {
     return this.prismaService.conversation.update({

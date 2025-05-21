@@ -13,8 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
- 
-
 // Model cho người dùng
 model User {
   id        Int      @id @default(autoincrement())
@@ -26,8 +24,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  refreshTokens  RefreshToken[]
-
+  refreshTokens RefreshToken[]
 
   // Mối quan hệ với tin nhắn (người gửi)
   sentMessages Message[] @relation("Sender")
@@ -48,7 +45,7 @@ model User {
   friendRequestsReceived FriendRequest[] @relation("Recipient")
 
   // Mối quan hệ với danh sách bạn bè đã chấp nhận
-  friends Friend[] @relation("UserA")
+  friends  Friend[] @relation("UserA")
   friendOf Friend[] @relation("UserB")
 
   // Mối quan hệ với nhóm mà người dùng là quản trị viên
@@ -59,37 +56,37 @@ model User {
 }
 
 model RefreshToken {
-   token      String @unique @db.VarChar(1000)
-   userId     Int
-   user       User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction) 
+  token  String @unique @db.VarChar(1000)
+  userId Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-   expiresAt  DateTime
-   createdAt  DateTime @default(now())
- 
-   @@index([expiresAt])
- }
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
 
 // Model cho tin nhắn
 model Message {
-  id             Int           @id @default(autoincrement())
-  content        String
-  senderId       Int
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  content   String
+  senderId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Sender of the message
-  sender         User @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
+  sender User @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
 
   // Group this message belongs to
-  groupId        Int?
-  group          Group? @relation("GroupMessages", fields: [groupId], references: [id], onDelete: SetNull)
+  groupId Int?
+  group   Group? @relation("GroupMessages", fields: [groupId], references: [id], onDelete: SetNull)
 
   // Conversation this message belongs to (optional)
   conversationId Int?
   conversation   Conversation? @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
 
   // Message's status in terms of reading
-  readReceipts   ReadReceipt[]
+  readReceipts ReadReceipt[]
 
   // Opposite relation for lastMessage in Conversation
   lastMessageOfConversation Conversation? @relation("LastMessage")
@@ -97,21 +94,25 @@ model Message {
 
 // Model cho cuộc trò chuyện (có thể là riêng tư hoặc nhóm)
 model Conversation {
-  id            Int      @id @default(autoincrement())
-  name          String?  // Group name (null for private chats)
-  isGroup       Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String? // Group name (null for private chats)
+  isGroup   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Messages in the conversation
-  messages      Message[] @relation("ConversationMessages")
+  messages Message[] @relation("ConversationMessages")
 
   // Last message in the conversation
   lastMessageId Int?     @unique
   lastMessage   Message? @relation("LastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
 
   // Participants in the conversation
-  participants  Participant[]
+  participants Participant[]
+
+  // Group
+  group   Group? @relation("ConversationGroup", fields: [groupId], references: [id])
+  groupId Int? @unique
 }
 
 // Model cho người tham gia cuộc trò chuyện (liên kết User và Conversation)
@@ -121,7 +122,7 @@ model Participant {
   joinedAt       DateTime @default(now())
   isAdmin        Boolean  @default(false) // Cho nhóm
 
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@id([userId, conversationId]) // Khóa chính kép để đảm bảo mỗi người dùng chỉ tham gia một cuộc trò chuyện một lần
@@ -129,9 +130,9 @@ model Participant {
 
 // Model cho trạng thái đã đọc của tin nhắn
 model ReadReceipt {
-  userId      Int
-  messageId   Int
-  readAt      DateTime @default(now())
+  userId    Int
+  messageId Int
+  readAt    DateTime @default(now())
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
@@ -172,7 +173,7 @@ model Group {
   name        String
   description String?
   avatarUrl   String?
-  adminId     Int      // ID of the group admin
+  adminId     Int // ID of the group admin
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -184,14 +185,17 @@ model Group {
 
   // Messages in the group
   messages Message[] @relation("GroupMessages")
+
+  // Conversation
+  conversation Conversation? @relation("ConversationGroup") 
 }
 
 // Model cho thành viên nhóm (liên kết User và Group)
 model GroupMember {
-  userId    Int
-  groupId   Int
-  joinedAt  DateTime @default(now())
-  role      String   @default("member") // "member", "admin" (có thể mở rộng)
+  userId   Int
+  groupId  Int
+  joinedAt DateTime @default(now())
+  role     String   @default("member") // "member", "admin" (có thể mở rộng)
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
