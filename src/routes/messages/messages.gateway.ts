@@ -114,7 +114,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!isAuthorized || !group) {
         client.emit('error', 'Not authorized to send message to this room, you are not a member');
         return;
-      }
+      } 
     }
 
     const message = await this.messagesService.sendMessage(

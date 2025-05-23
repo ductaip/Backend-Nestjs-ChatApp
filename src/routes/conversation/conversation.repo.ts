@@ -147,7 +147,16 @@ export class ConversationRepo {
             },
           },
         },
-        lastMessage: true
+        lastMessage: true,
+        group: {
+          include: {
+            members: {
+              include: {
+                user: true
+              }
+            }
+          }
+        },
       },
     });
   }
@@ -163,5 +172,25 @@ export class ConversationRepo {
       },
     }
     )
+  }
+
+  async removeParticipant(converationId: number, participantId: number) {
+    return this.prismaService.participant.delete({
+      where: {
+        userId_conversationId: {
+          userId: participantId,
+          conversationId: converationId
+        }
+      }
+    })
+  }
+
+  async addParticipant(converationId: number, participantId: number) {
+    return this.prismaService.participant.create({
+      data: {
+        userId: participantId,
+        conversationId: converationId,
+      }
+    })
   }
 }
