@@ -37,7 +37,7 @@ export class ConversationService {
     const conversation = await this.conversationRepo.createConversation(
       currentUserId,
       participantId,
-    );
+    ); 
 
     return conversation;
   }
@@ -49,7 +49,7 @@ export class ConversationService {
     if (!group) {
       throw new UnprocessableEntityException('Group id is invalid');
     }
-
+ 
     // kiểm tra phải admin không
     const isAdmin = await this.groupRepo.isAdmin(currentUserId, groupId);
     

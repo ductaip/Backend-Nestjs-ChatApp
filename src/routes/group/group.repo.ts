@@ -62,6 +62,15 @@ export class GroupRepo {
         userId,
         role,
       },
+      include: {
+        group: {
+          select: {
+            conversation : true,
+            admin: true,
+            name: true
+          }
+        }
+      }
     });
   }
 
@@ -113,6 +122,7 @@ export class GroupRepo {
           },
           take: 50,
         },
+        conversation: true
       },
     });
   }
