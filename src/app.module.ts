@@ -12,9 +12,20 @@ import { GroupModule } from './routes/group/group.module';
 import { UserController } from './routes/user/user.controller';
 import { UserModule } from './routes/user/user.module';
 import CustomZodValidationPipe from './shared/pipes/custom-zod-validation.pipe';
+import { MongooseModule } from '@nestjs/mongoose';
+import envConfig from './shared/config';
 
 @Module({
-  imports: [SharedModule, AuthModule, ConversationModule, MessagesModule, FriendRequestModule, GroupModule, UserModule],
+  imports: [
+    MongooseModule.forRoot(envConfig.MONGO_URI),
+    SharedModule,
+    AuthModule,
+    ConversationModule,
+    MessagesModule,
+    FriendRequestModule,
+    GroupModule,
+    UserModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,

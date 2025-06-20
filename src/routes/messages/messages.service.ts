@@ -1,13 +1,16 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { MessageRepo } from './messages.repo';
 import { ConversationRepo } from '../conversation/conversation.repo';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class MessagesService {
   constructor(
     private readonly messageRepo: MessageRepo,
     private readonly conversationRepo: ConversationRepo,
-  ) { }
+    @InjectModel('Message') private messageModel: Model<any>,
+  ) {}
 
   async sendMessage(conversationId: number, senderId: number, content: string) {
     // Kiểm tra quyền tham gia cuộc trò chuyện
@@ -19,14 +22,14 @@ export class MessagesService {
     if (!isParticipant) {
       throw new HttpException('User not a participant', HttpStatus.FORBIDDEN);
     }
- 
+
     // Tạo tin nhắn
     const message = await this.messageRepo.createMessage({
       conversationId,
       senderId,
       content,
     });
- 
+
     // TODO: Mã hóa tin nhắn
 
     // Cập nhật Tin nhắn cuối cùng trong cuộc trò chuyện

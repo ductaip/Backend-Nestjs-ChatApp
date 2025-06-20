@@ -1,0 +1,19 @@
+services:
+  mongo:
+    image: mongo
+    container_name: chatapp-mongo
+    restart: always
+    ports:
+      - 27018:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+  postgres:
+    image: postgres:15
+    container_name: chatapp-postgres
+    environment:
+      POSTGRES_DB: chatapp
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+    ports:
+      - '5432:5432'
