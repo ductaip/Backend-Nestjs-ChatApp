@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Query, UseGuards, Post, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { AccessTokenGuard } from 'src/shared/guards/access-token.guard';
-import { FindUserResDTO, FriendsListDTO, GetUser, UserResDTO } from './user.dto';
+import { FindUserResDTO, FriendsListDTO, GetUser, UserResDTO, UploadAvatarResDTO } from './user.dto';
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator';
 import { UserService } from './user.service';
 
@@ -38,5 +39,24 @@ export class UserController {
           @ActiveUser('userId') currentUserId: number
      ) {
           return await this.userService.getFriendList(currentUserId);
+     }
+
+     @Post('upload-avatar')
+     @UseGuards(AccessTokenGuard)
+     @UseInterceptors(FileInterceptor('avatar'))
+     @ZodSerializerDto(UploadAvatarResDTO)
+     async uploadAvatar(
+          @ActiveUser('userId') currentUserId: number,
+          @UploadedFile(
+               new ParseFilePipe({
+                    validators: [
+                         new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
+                         new FileTypeValidator({ fileType: '.(jpg|jpeg|png|gif)' }),
+                    ],
+               }),
+          )
+          file: Express.Multer.File,
+     ) {
+          return await this.userService.uploadAvatar(currentUserId, file);
      }
 }

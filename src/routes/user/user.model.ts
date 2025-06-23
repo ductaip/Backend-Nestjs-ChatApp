@@ -44,3 +44,9 @@ export const FriendsListSchema = z.object({
   friendRequestsReceived: val.friendRequestsReceived,
   friends: [...val.friendOf, ...val.friends]
 }))
+
+export const UploadAvatarResSchema = z.object({
+  success: z.boolean(),
+  avatarUrl: z.string(),
+  message: z.string(),
+})

@@ -73,4 +73,11 @@ export class UserRepository {
                }
           },);
      }
+
+     async updateUser(params: {
+          where: { id: number };
+          data: { avatarUrl?: string };
+     }): Promise<UserType> {
+          return await this.prismaService.user.update(params);
+     }
 }
