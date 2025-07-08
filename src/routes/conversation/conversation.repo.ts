@@ -21,7 +21,7 @@ export class ConversationRepo {
             user: true
           },
         },
-        lastMessage: true,
+        // lastMessage: true,
       },
     });
   }
@@ -67,7 +67,7 @@ export class ConversationRepo {
             },
           },
         },
-        lastMessage: true,
+        // lastMessage: true,
       },
     });
   }
@@ -105,7 +105,7 @@ export class ConversationRepo {
             },
           },
         },
-        lastMessage: true,
+        // lastMessage: true,
       },
     });
   }
@@ -147,7 +147,7 @@ export class ConversationRepo {
             },
           },
         },
-        lastMessage: true,
+        // lastMessage: true,
         group: {
           include: {
             members: {

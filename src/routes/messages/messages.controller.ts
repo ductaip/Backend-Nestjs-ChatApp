@@ -21,19 +21,21 @@ class CreateMessageDto {
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 
-  @Post()
-  async sendMessage(
-    @ActiveUser('userId') senderId: number,
-    @Param('id') conversationId: string,
-    @Body() createMessageDto: CreateMessageDto,
-  ) {
-    const message = await this.messagesService.sendMessage(
-      parseInt(conversationId),
-      senderId,
-      createMessageDto.content,
-    );
-    return message;
-  }
+  // @Post()
+  // async sendMessage(
+  //   @ActiveUser('userId') senderId: number,
+  //   @Param('id') conversationId: string,
+  //   @Body() createMessageDto: CreateMessageDto,
+  // ) {
+  //   const message = await this.messagesService.sendMessage(
+  //     parseInt(conversationId),
+  //     {
+
+  //     },
+  //     createMessageDto.content,
+  //   );
+  //   return message;
+  // }
 
   @Get()
   @UseGuards(AccessTokenGuard)
@@ -48,4 +50,3 @@ export class MessagesController {
     return messages;
   }
 }
- 

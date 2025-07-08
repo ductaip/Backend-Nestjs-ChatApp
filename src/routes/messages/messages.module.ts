@@ -15,6 +15,8 @@ import {
   SystemMessageSchema,
   TextMessageSchema,
 } from './schemas/message.schema';
+import { MessagesMongoRepo } from './messages.mongo.repo';
+import { UserRepository } from '../user/user.repo';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import {
     ChatGateway,
     ConversationRepo,
     GroupRepo,
+    MessagesMongoRepo,
+    UserRepository
   ],
   controllers: [MessagesController],
 })
