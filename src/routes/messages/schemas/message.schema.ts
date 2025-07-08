@@ -9,7 +9,7 @@ export enum MessageStatus {
 
 export const BaseMessageSchema = new Schema(
   {
-    _id: { type: Number, required: true },
+    messageId: { type: Number, required: true, unique: true },
     sender: {
       sender_name: { type: String, required: true },
       sender_id: { type: Number, required: true },
@@ -30,47 +30,65 @@ export const BaseMessageSchema = new Schema(
   {
     discriminatorKey: 'type',
     timestamps: true,
-    _id: false,
+    // _id: false,
   },
 );
 
-export const TextMessageSchema = new Schema({
-  content: { type: String, require: true },
-});
-
-export const FileMessageSchema = new Schema({
-  url: { type: String, require: true },
-  size: { type: Number, require: true },
-  extension: { type: String, require: true },
-});
-
-export const AudioMessageSchema = new Schema({
-  url: { type: String, require: true },
-  long: { type: Number, require: true },
-  size: { type: Number, require: true },
-  extension: { type: String, require: true },
-});
-
-export const ImageMessageSchema = new Schema({
-  url: { type: String, require: true },
-  width: { type: Number, require: true },
-  height: { type: Number, require: true },
-  size: { type: Number, require: true },
-  extension: { type: String, require: true },
-});
-
-export const SystemMessageSchema = new Schema({
-  content: { type: String, require: true },
-});
-
-export const CallMessageSchema = new Schema({
-  media_type: {
-    type: String,
-    enum: ['voice', 'video'],
-    require: true,
+export const TextMessageSchema = new Schema(
+  {
+    content: { type: String, require: true },
   },
-  duration: {
-    type: Number,
-    require: true,
+  { _id: false },
+);
+
+export const FileMessageSchema = new Schema(
+  {
+    url: { type: String, require: true },
+    size: { type: Number, require: true },
+    extension: { type: String, require: true },
   },
-});
+  { _id: false },
+);
+
+export const AudioMessageSchema = new Schema(
+  {
+    url: { type: String, require: true },
+    long: { type: Number, require: true },
+    size: { type: Number, require: true },
+    extension: { type: String, require: true },
+  },
+  { _id: false },
+);
+
+export const ImageMessageSchema = new Schema(
+  {
+    url: { type: String, require: true },
+    width: { type: Number, require: true },
+    height: { type: Number, require: true },
+    size: { type: Number, require: true },
+    extension: { type: String, require: true },
+  },
+  { _id: false },
+);
+
+export const SystemMessageSchema = new Schema(
+  {
+    content: { type: String, require: true },
+  },
+  { _id: false },
+);
+
+export const CallMessageSchema = new Schema(
+  {
+    media_type: {
+      type: String,
+      enum: ['voice', 'video'],
+      require: true,
+    },
+    duration: {
+      type: Number,
+      require: true,
+    },
+  },
+  { _id: false },
+);

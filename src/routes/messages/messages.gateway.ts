@@ -24,10 +24,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly conversationRepo: ConversationRepo,
     private readonly groupRepo: GroupRepo,
     private readonly messagesService: MessagesService,
-  ) { }
+  ) {}
 
   async handleConnection(client: Socket) {
-    const token = client.handshake.headers.authorization?.split('Bearer ')[1];
+    const token =
+      client.handshake.headers.authorization?.split('Bearer ')[1] ??
+      client.handshake.query.token;
     const user = await this.tokenService.verifyAccessToken(token as string);
     if (!user) {
       client.disconnect();
@@ -43,11 +45,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     conversations.forEach((convo) => {
       if (!convo.isGroup) {
         client.join(`conversation_${convo.id}`);
-      }
-      else {
+      } else {
         client.join(`group_${convo.id}`);
       }
-    })
+    });
 
     // Join group rooms
     const groups = await this.groupRepo.getGroupsForUser(user.userId);
@@ -71,7 +72,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     data: {
       roomType: 'conversation' | 'group';
       roomId: number;
-      content: string;
+      content: unknown;
     },
   ) {
     console.log(data);
@@ -85,6 +86,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const conversation = await this.conversationRepo.findConversationById(
       data.roomId,
     );
+    if (!conversation) {
+      client.emit('error', 'Conversation not found');
+      return;
+    }
 
     if (data.roomType === 'conversation') {
       const isAuthorized = await this.conversationRepo.isParticipant(
@@ -97,29 +102,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
     } else if (data.roomType === 'group') {
       // TODO: Refactor!!!
-      const groupId = conversation?.groupId
+      const groupId = conversation?.groupId;
 
-      if (!groupId || !conversation){
-        client.emit('error', 'Not authorized to send message to this room, group not exist');
+      if (!groupId || !conversation) {
+        client.emit(
+          'error',
+          'Not authorized to send message to this room, group not exist',
+        );
         return;
       }
 
       const group = await this.groupRepo.getGroupById(groupId);
-      
-      const isAuthorized = await this.groupRepo.isMember(
-        user.userId,
-        groupId,
-      );
+
+      const isAuthorized = await this.groupRepo.isMember(user.userId, groupId);
 
       if (!isAuthorized || !group) {
-        client.emit('error', 'Not authorized to send message to this room, you are not a member');
+        client.emit(
+          'error',
+          'Not authorized to send message to this room, you are not a member',
+        );
         return;
-      } 
+      }
     }
 
     const message = await this.messagesService.sendMessage(
       data.roomId,
-      user.userId,
+      {
+        sender_id: user.userId,
+        sender_name: user.name,
+      },
       data.content,
     );
 
@@ -128,12 +139,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       .emit('newMessage', message);
   }
 
-  @SubscribeMessage("joinRoom")
+  @SubscribeMessage('joinRoom')
   async handleJoinRoom(
     client: Socket,
     data: {
       roomId: string;
-      roomType: "group" | "conversation"
+      roomType: 'group' | 'conversation';
     },
   ) {
     // TODO: check group
@@ -144,12 +155,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    if (roomType === "conversation") {
+    if (roomType === 'conversation') {
       client.join(`conversation_${roomId}`);
-    }
-    else {
+    } else {
       client.join(`group_${roomId}`);
-
     }
 
     this.logger.log(

@@ -24,7 +24,9 @@ export class FriendRequestGateway
 
   async handleConnection(client: Socket) {
     try {
-      const token = client.handshake.headers.authorization?.split('Bearer ')[1];
+      const token =
+        client.handshake.headers.authorization?.split('Bearer ')[1] ??
+        client.handshake.query.token;
       const user = await this.tokenService.verifyAccessToken(token as string);
       if (!user) {
         client.disconnect();

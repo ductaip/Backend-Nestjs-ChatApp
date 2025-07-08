@@ -19,6 +19,8 @@ const configSchema = z.object({
   ACCESS_TOKEN_EXPIRES_IN: z.string(),
   REFRESH_TOKEN_SECRET: z.string(),
   REFRESH_TOKEN_EXPIRES_IN: z.string(),
+  AGORA_APP_ID: z.string(),
+  AGORA_APP_CERTIFICATE: z.string(),
   PORT: z.string(),
   SECRET_API_KEY: z.string(),
 });

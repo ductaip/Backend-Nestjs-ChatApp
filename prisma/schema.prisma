@@ -83,13 +83,13 @@ model Message {
 
   // Conversation this message belongs to (optional)
   conversationId Int?
-  conversation   Conversation? @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+  // conversation   Conversation? @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
 
   // Message's status in terms of reading
   readReceipts ReadReceipt[]
 
   // Opposite relation for lastMessage in Conversation
-  lastMessageOfConversation Conversation? @relation("LastMessage")
+  // lastMessageOfConversation Conversation? @relation("LastMessage")
 }
 
 // Model cho cuộc trò chuyện (có thể là riêng tư hoặc nhóm)
@@ -101,11 +101,11 @@ model Conversation {
   updatedAt DateTime @updatedAt
 
   // Messages in the conversation
-  messages Message[] @relation("ConversationMessages")
+  // messages Message[] @relation("ConversationMessages")
 
   // Last message in the conversation
   lastMessageId Int?     @unique
-  lastMessage   Message? @relation("LastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
+  // lastMessage   Message? @relation("LastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
 
   // Participants in the conversation
   participants Participant[]
