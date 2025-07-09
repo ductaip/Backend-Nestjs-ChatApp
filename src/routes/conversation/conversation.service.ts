@@ -1,7 +1,14 @@
-import { HttpException, HttpStatus, Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { ConversationRepo } from './conversation.repo';
 import { AuthRepository } from '../auth/auth.repo';
 import { GroupRepo } from '../group/group.repo';
+import { MessagesMongoRepo } from '../messages/messages.mongo.repo';
+import { ConversationResDTO } from './conversation.dto';
 
 @Injectable()
 export class ConversationService {
@@ -9,6 +16,7 @@ export class ConversationService {
     private readonly conversationRepo: ConversationRepo,
     private readonly groupRepo: GroupRepo,
     private readonly authRepository: AuthRepository,
+    private readonly messageRepo: MessagesMongoRepo,
   ) {}
 
   //
@@ -37,48 +45,71 @@ export class ConversationService {
     const conversation = await this.conversationRepo.createConversation(
       currentUserId,
       participantId,
-    ); 
+    );
 
     return conversation;
   }
 
   async createConversationGroup(currentUserId: number, groupId: number) {
     const group = await this.groupRepo.getGroupById(groupId);
-    
+
     // kiểm tra group có tồn tại không;
     if (!group) {
       throw new UnprocessableEntityException('Group id is invalid');
     }
- 
+
     // kiểm tra phải admin không
     const isAdmin = await this.groupRepo.isAdmin(currentUserId, groupId);
-    
+
     if (!isAdmin) {
       // TODO: refactor lại handle exception
       throw new HttpException('Invalid', HttpStatus.BAD_REQUEST);
     }
 
     // TODO: refactor
-    const participants: number[] = group.members.map((member) => (member.userId)).filter((id) => id !== currentUserId);
+    const participants: number[] = group.members
+      .map((member) => member.userId)
+      .filter((id) => id !== currentUserId);
     const name: string = group.name;
 
-    const conversation = await this.conversationRepo.createConversationGroup(currentUserId, participants, name, groupId)
+    const conversation = await this.conversationRepo.createConversationGroup(
+      currentUserId,
+      participants,
+      name,
+      groupId,
+    );
 
     return conversation;
   }
 
   // Get conversation list
   async getConversations(currentUserId: number) {
-    const conversations = await this.conversationRepo.getConversationList(
-      currentUserId,
-    );
+    const conversationRes: ConversationResDTO[] = [];
+    const conversations =
+      await this.conversationRepo.getConversationList(currentUserId);
 
-    return conversations;
+    for (const c of conversations) {
+      let convo = new ConversationResDTO();
+      convo = {
+        ...c,
+      };
+      if (c.lastMessageId) {
+        const lastMessage = await this.messageRepo.getMessagesById(
+          c.lastMessageId,
+        );
+        convo.lastMessage = lastMessage;
+      }
+      conversationRes.push(convo);
+    }
+
+
+    return conversationRes;
   }
 
-  // Get conversation 
+  // Get conversation
   async getConversation(conversationId: number) {
-    const conversation = await this.conversationRepo.findConversationById(conversationId);
+    const conversation =
+      await this.conversationRepo.findConversationById(conversationId);
 
     return conversation;
   }

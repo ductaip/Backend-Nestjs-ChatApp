@@ -45,8 +45,9 @@ import { UserRepository } from '../user/user.repo';
     ConversationRepo,
     GroupRepo,
     MessagesMongoRepo,
-    UserRepository
+    UserRepository,
   ],
   controllers: [MessagesController],
+  exports: [MessagesMongoRepo],
 })
 export class MessagesModule {}

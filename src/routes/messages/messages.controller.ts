@@ -16,7 +16,7 @@ class CreateMessageDto {
   content: string;
 }
 
-@Controller('conversations/:id/messages')
+@Controller()
 @UseGuards(AccessTokenGuard)
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
@@ -37,14 +37,31 @@ export class MessagesController {
   //   return message;
   // }
 
-  @Get()
+  @Get('conversations/:id/messages')
   @UseGuards(AccessTokenGuard)
-  async getMessages(
+  async getMessage(
     @ActiveUser('userId') currentUserId: number,
     @Param('id') conversationId: string,
   ) {
-    const messages = await this.messagesService.getMessages(
+    const messages = await this.messagesService.getMessage(
       parseInt(conversationId),
+      currentUserId,
+    );
+    return messages;
+  }
+
+  @Get('messages')
+  @UseGuards(AccessTokenGuard)
+  async getMessages(
+    @ActiveUser('userId') currentUserId: number,
+    @Query('convoId') convoIds: string[] | string,
+  ) {
+    const ids = Array.isArray(convoIds) ? convoIds : [convoIds];
+    if (ids.length == 0) {
+      return [];
+    }
+    const messages = await this.messagesService.getMessages(
+      ids.map((id) => parseInt(id)),
       currentUserId,
     );
     return messages;

@@ -36,18 +36,22 @@ export class MessagesMongoRepo {
     return created;
   }
 
-  async getMessagesById(messageId: number, limit = 50) {
-    return this.messageModel
-      .find({ _id: messageId })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .exec();
+  async getMessagesById(messageId: number) {
+    return this.messageModel.findOne({ messageId: messageId }).exec();
   }
 
   async getMessagesByConversationId(convoId: number, limit = 50) {
     return this.messageModel
       .find({ conversation_id: convoId })
       .sort({ createdAt: -1 })
+      .limit(limit)
+      .exec();
+  }
+
+  async getMessagesByConversationIds(convoIds: number[], limit = 50) {
+    return this.messageModel
+      .find({ conversation_id: { $in: convoIds } }) // lọc theo danh sách id
+      .sort({ createdAt: -1 }) // sắp xếp mới -> cũ
       .limit(limit)
       .exec();
   }
