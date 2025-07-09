@@ -50,6 +50,9 @@ export class FriendRequestGateway
     client: Socket,
     data: { recipientEmail: string },
   ) {
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
     const user = client.data.user;
     if (!user) {
       client.emit('error', 'Not authenticated');
@@ -67,6 +70,9 @@ export class FriendRequestGateway
 
   @SubscribeMessage('acceptFriendRequest')
   async handleAcceptFriendRequest(client: Socket, data: { requestId: number }) {
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
     const user = client.data.user;
     if (!user) {
       client.emit('error', 'Not authenticated');
@@ -100,6 +106,9 @@ export class FriendRequestGateway
 
   @SubscribeMessage('rejectFriendRequest')
   async handleRejectFriendRequest(client: Socket, data: { requestId: number }) {
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
     const user = client.data.user;
     if (!user) {
       client.emit('error', 'Not authenticated');

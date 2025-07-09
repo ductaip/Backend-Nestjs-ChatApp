@@ -43,6 +43,9 @@ export class GroupGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('createGroup')
   async handleCreateGroup(client: Socket, data: CreateGroupBodyDTO) {
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
     const user = client.data.user as AccessTokenPayload;
 
     if (!user) {
@@ -89,6 +92,9 @@ export class GroupGateway implements OnGatewayConnection, OnGatewayDisconnect {
       memberId: number;
     },
   ) {
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
     const user = client.data.user as AccessTokenPayload;
 
     if (!user) {
@@ -134,6 +140,9 @@ export class GroupGateway implements OnGatewayConnection, OnGatewayDisconnect {
       memberId: number;
     },
   ) {
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
     const user = client.data.user as AccessTokenPayload;
 
     if (!user) {

@@ -8,6 +8,7 @@ import { FriendRequestController } from './friend-request.controller';
 import { ConversationService } from '../conversation/conversation.service';
 import { ConversationRepo } from '../conversation/conversation.repo';
 import { GroupRepo } from '../group/group.repo';
+import { MessagesModule } from '../messages/messages.module';
 
 @Module({
   providers: [
@@ -20,5 +21,6 @@ import { GroupRepo } from '../group/group.repo';
     GroupRepo
   ],
   controllers: [FriendRequestController],
+  imports: [MessagesModule], 
 })
 export class FriendRequestModule {}
