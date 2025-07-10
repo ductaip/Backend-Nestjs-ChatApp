@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { MessageRepo } from './messages.repo';
 import { ConversationRepo } from '../conversation/conversation.repo';
 import { InjectModel } from '@nestjs/mongoose';
@@ -6,6 +6,7 @@ import { Model } from 'mongoose';
 import { MessagesMongoRepo } from './messages.mongo.repo';
 import { CreateMessageInput, MessageType } from './message.dto';
 import { UserRepository } from '../user/user.repo';
+import { log } from 'console';
 
 @Injectable()
 export class MessagesService {
@@ -74,12 +75,15 @@ export class MessagesService {
     // TODO: Mã hóa tin nhắn
 
     // Cập nhật Tin nhắn cuối cùng trong cuộc trò chuyện
-    await this.conversationRepo.updateLastMessage(conversationId, message.messageId);
+    await this.conversationRepo.updateLastMessage(
+      conversationId,
+      message.messageId,
+    );
 
     return message;
   }
 
-  async getMessages(conversationId: number, currentUserId: number) {
+  async getMessage(conversationId: number, currentUserId: number) {
     // Kiểm tra quyền tham gia cuộc trò chuyện
     const isParticipant = await this.conversationRepo.isParticipant(
       currentUserId,
@@ -92,6 +96,27 @@ export class MessagesService {
     // Lấy danh sách tin nhắn
     const messages =
       await this.messageRepo.getMessagesByConversationId(conversationId);
+
+    return messages;
+  }
+
+  async getMessages(conversationIds: number[], currentUserId: number) {
+    // Kiểm tra quyền tham gia cuộc trò chuyện
+    console.log('convoIds: ', conversationIds);
+    const results = await Promise.all(
+      conversationIds.map((id) =>
+        this.conversationRepo.isParticipant(currentUserId, id),
+      ),
+    );
+    const isParticipant = results.every((res) => res === true);
+
+    if (!isParticipant) {
+      throw new HttpException('User not a participant', HttpStatus.FORBIDDEN);
+    }
+
+    // Lấy danh sách tin nhắn
+    const messages =
+      await this.messageRepo.getMessagesByConversationIds(conversationIds);
 
     return messages;
   }

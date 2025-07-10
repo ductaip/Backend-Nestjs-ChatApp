@@ -81,7 +81,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       content: unknown;
     },
   ) {
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
     console.log(data);
+
     const user = client.data.user as AccessTokenPayload;
     if (!user) {
       client.emit('error', 'Not authenticated');
@@ -153,6 +157,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       roomType: 'group' | 'conversation';
     },
   ) {
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
     // TODO: check group
     const { roomId, roomType } = data;
     const user = client.data.user as AccessTokenPayload;

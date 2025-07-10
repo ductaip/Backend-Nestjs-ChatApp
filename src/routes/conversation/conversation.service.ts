@@ -2,12 +2,13 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  Logger,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { ConversationRepo } from './conversation.repo';
 import { AuthRepository } from '../auth/auth.repo';
 import { GroupRepo } from '../group/group.repo';
+import { MessagesMongoRepo } from '../messages/messages.mongo.repo';
+import { ConversationResDTO } from './conversation.dto';
 
 @Injectable()
 export class ConversationService {
@@ -15,6 +16,7 @@ export class ConversationService {
     private readonly conversationRepo: ConversationRepo,
     private readonly groupRepo: GroupRepo,
     private readonly authRepository: AuthRepository,
+    private readonly messageRepo: MessagesMongoRepo,
   ) {}
 
   //
@@ -83,10 +85,25 @@ export class ConversationService {
 
   // Get conversation list
   async getConversations(currentUserId: number) {
+    const conversationRes: ConversationResDTO[] = [];
     const conversations =
       await this.conversationRepo.getConversationList(currentUserId);
 
-    return conversations;
+    for (const c of conversations) {
+      let convo = new ConversationResDTO();
+      convo = {
+        ...c,
+      };
+      if (c.lastMessageId) {
+        const lastMessage = await this.messageRepo.getMessagesById(
+          c.lastMessageId,
+        );
+        convo.lastMessage = lastMessage;
+      }
+      conversationRes.push(convo);
+    }
+
+    return conversationRes;
   }
 
   // Get conversation
