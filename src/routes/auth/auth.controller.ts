@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ZodSerializerDto } from 'nestjs-zod';
 import {
@@ -16,7 +16,7 @@ import { AccessTokenGuard } from 'src/shared/guards/access-token.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   @ZodSerializerDto(RegisterResDTO)
@@ -27,6 +27,7 @@ export class AuthController {
   @Post('login')
   @ZodSerializerDto(LoginResDTO)
   async login(@Body() body: LoginBodyDTO) {
+    Logger.fatal('>>>>>run on login .');
     return await this.authService.login(body);
   }
 
@@ -40,6 +41,4 @@ export class AuthController {
   async logout(@Body() body: LogoutBodyDTO) {
     return await this.authService.logout(body);
   }
-
-  
 }

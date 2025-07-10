@@ -27,39 +27,45 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
 
   async handleConnection(client: Socket) {
-    const token =
-      client.handshake.headers.authorization?.split('Bearer ')[1] ??
-      client.handshake.query.token;
-    const user = await this.tokenService.verifyAccessToken(token as string);
-    if (!user) {
-      client.disconnect();
-      return;
-    }
-    client.data.user = user;
-
-    // Join conversation rooms
-    const conversations = await this.conversationRepo.getConversationList(
-      user.userId,
-    );
-
-    conversations.forEach((convo) => {
-      if (!convo.isGroup) {
-        client.join(`conversation_${convo.id}`);
-      } else {
-        client.join(`group_${convo.id}`);
+    try {
+      const token =
+        client.handshake.headers.authorization?.split('Bearer ')[1] ??
+        client.handshake.query.token;
+      const user = await this.tokenService.verifyAccessToken(token as string);
+      console.log('on handle connection');
+      if (!user) {
+        client.disconnect();
+        return;
       }
-    });
+      client.data.user = user;
 
-    // Join group rooms
-    const groups = await this.groupRepo.getGroupsForUser(user.userId);
-    // groups.forEach((group) => {
-    //   client.join(`group_${group.id}`);
-    // });
+      // Join conversation rooms
+      const conversations = await this.conversationRepo.getConversationList(
+        user.userId,
+      );
 
-    this.logger.log(
-      `User ${user.userId} connected and joined ${conversations.length} conversations and ${groups.length} groups`,
-      // `User ${user.userId} connected and joined ${conversations.length} conversations`,
-    );
+      conversations.forEach((convo) => {
+        if (!convo.isGroup) {
+          client.join(`conversation_${convo.id}`);
+        } else {
+          client.join(`group_${convo.id}`);
+        }
+      });
+
+      // Join group rooms
+      const groups = await this.groupRepo.getGroupsForUser(user.userId);
+      // groups.forEach((group) => {
+      //   client.join(`group_${group.id}`);
+      // });
+
+      this.logger.log(
+        `User ${user.userId} connected and joined ${conversations.length} conversations and ${groups.length} groups`,
+        // `User ${user.userId} connected and joined ${conversations.length} conversations`,
+      );
+    } catch (error) {
+      console.log('on connection messages gateway', error);
+      throw error;
+    }
   }
 
   handleDisconnect(client: Socket) {

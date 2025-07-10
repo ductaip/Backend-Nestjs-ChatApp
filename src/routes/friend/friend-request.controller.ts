@@ -7,6 +7,7 @@ import {
   Body,
   Req,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import { FriendRequestService } from './friend-request.service';
 import {
@@ -41,10 +42,12 @@ export class FriendRequestController {
     @Body() updateDto: UpdateFriendRequestBodyDTO,
   ) {
     const requestId = Number(id);
-    
+    Logger.debug('run on update friend req');
     if (updateDto.status === 'accepted') {
+      Logger.debug('run on accept req');
       return this.friendRequestService.acceptRequest(requestId, recipientId);
     } else if (updateDto.status === 'rejected') {
+      Logger.debug('run on reject req');
       return this.friendRequestService.rejectRequest(requestId, recipientId);
     } else {
       throw new HttpException('Invalid status', HttpStatus.BAD_REQUEST);
@@ -55,5 +58,5 @@ export class FriendRequestController {
   @UseGuards(AccessTokenGuard)
   async getPendingRequests(@ActiveUser('userId') userId: number) {
     return this.friendRequestService.getPendingRequests(userId);
-  }  
+  }
 }

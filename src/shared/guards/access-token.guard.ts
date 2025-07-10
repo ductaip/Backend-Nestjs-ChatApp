@@ -15,6 +15,7 @@ export class AccessTokenGuard implements CanActivate {
       request['user'] = decodedAccessToken;
       return true;
     } catch {
+      console.log('access token fail');
       return false;
     }
   }
