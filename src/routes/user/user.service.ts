@@ -4,70 +4,87 @@ import { CloudinaryService } from 'src/shared/services/cloudinary.service';
 
 @Injectable()
 export class UserService {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
-     constructor(
-          private readonly userRepository: UserRepository,
-          private readonly cloudinaryService: CloudinaryService,
-     ) { }
+  async getProfile(currentUserId: number) {
+    const user = await this.userRepository.findUniqueUser({
+      id: currentUserId,
+    });
+    if (!user) throw new UnauthorizedException('User not found');
+    return user;
+  }
 
-     async getProfile(currentUserId: number) {
-          const user = await this.userRepository.findUniqueUser({
-               id: currentUserId,
-          });
-          if (!user) throw new UnauthorizedException('User not found');
-          return user;
-     }
+  async getProfileByEmail(userEmail: string, currentUserId: number) {
+    console.log(userEmail);
+    const user = await this.userRepository.findFriend(
+      {
+        email: userEmail,
+      },
+      currentUserId,
+    );
+    if (!user) throw new UnauthorizedException('User not found');
+    return user;
+  }
 
-     async getProfileByEmail(userEmail: string, currentUserId: number) {
-          console.log(userEmail);
-          const user = await this.userRepository.findFriend(
-               {
-                    email: userEmail,
-               }, currentUserId
-          );
-          if (!user) throw new UnauthorizedException('User not found');
-          return user;
-     }
+  async getFriendList(currentUserId: number) {
+    const friends = await this.userRepository.getFriends({ id: currentUserId });
 
-     async getFriendList(currentUserId: number) {
+    return friends;
+  }
 
-          const friends = await this.userRepository.getFriends({id: currentUserId})
+  async uploadAvatar(userId: number, file: Express.Multer.File) {
+    // Get current user to check if avatar exists
+    const currentUser = await this.userRepository.findUniqueUser({
+      id: userId,
+    });
+    if (!currentUser) {
+      throw new UnauthorizedException('User not found');
+    }
 
-          return friends;
-     }
+    // Upload new avatar to Cloudinary
+    const avatarUrl = await this.cloudinaryService.uploadImage(file, 'avatars');
 
-     async uploadAvatar(userId: number, file: Express.Multer.File) {
-          // Get current user to check if avatar exists
-          const currentUser = await this.userRepository.findUniqueUser({ id: userId });
-          if (!currentUser) {
-               throw new UnauthorizedException('User not found');
-          }
+    // Delete old avatar if exists
+    if (currentUser.avatarUrl) {
+      const oldPublicId = this.cloudinaryService.extractPublicIdFromUrl(
+        currentUser.avatarUrl,
+      );
+      if (oldPublicId) {
+        try {
+          await this.cloudinaryService.deleteImage(oldPublicId);
+        } catch (error) {
+          console.error('Failed to delete old avatar:', error);
+        }
+      }
+    }
 
-          // Upload new avatar to Cloudinary
-          const avatarUrl = await this.cloudinaryService.uploadImage(file, 'avatars');
+    // Update user with new avatar URL
+    const updatedUser = await this.userRepository.updateUser({
+      where: { id: userId },
+      data: { avatarUrl },
+    });
 
-          // Delete old avatar if exists
-          if (currentUser.avatarUrl) {
-               const oldPublicId = this.cloudinaryService.extractPublicIdFromUrl(currentUser.avatarUrl);
-               if (oldPublicId) {
-                    try {
-                         await this.cloudinaryService.deleteImage(oldPublicId);
-                    } catch (error) {
-                         console.error('Failed to delete old avatar:', error);
-                    }
-               }
-          }
+    return {
+      success: true,
+      avatarUrl,
+      message: 'Avatar uploaded successfully',
+    };
+  }
 
-          // Update user with new avatar URL
-          const updatedUser = await this.userRepository.updateUser({
-               where: { id: userId },
-               data: { avatarUrl }
-          });
+  async upload(file: Express.Multer.File) {
+    // Get current user to check if avatar exists
+    // const currentUser = await this.userRepository.findUniqueUser({ id: userId });
 
-          return {
-               success: true,
-               avatarUrl,
-               message: 'Avatar uploaded successfully'
-          };
-     }
+    // Upload new avatar to Cloudinary
+    const imageUpload = await this.cloudinaryService.uploadImage(file, 'image');
+
+    return {
+      success: true,
+      imageUpload,
+      message: 'Image is uploaded successfully',
+    };
+  }
 }

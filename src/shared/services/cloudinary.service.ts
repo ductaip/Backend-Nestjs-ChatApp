@@ -12,7 +12,10 @@ export class CloudinaryService {
     });
   }
 
-  async uploadImage(file: Express.Multer.File, folder: string = 'chat-app'): Promise<string> {
+  async uploadImage(
+    file: Express.Multer.File,
+    folder: string = 'chat-app',
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
@@ -21,18 +24,19 @@ export class CloudinaryService {
           transformation: [
             { width: 400, height: 400, crop: 'fill', gravity: 'face' },
             { quality: 'auto' },
-            { fetch_format: 'auto' }
-          ]
+            { fetch_format: 'auto' },
+          ],
         },
         (error, result) => {
           if (error) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(error);
           } else if (result) {
             resolve(result.secure_url);
           } else {
             reject(new Error('Upload failed: No result returned'));
           }
-        }
+        },
       );
 
       const readableStream = new Readable();
@@ -44,8 +48,10 @@ export class CloudinaryService {
 
   async deleteImage(publicId: string): Promise<void> {
     return new Promise((resolve, reject) => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       cloudinary.uploader.destroy(publicId, (error, result) => {
         if (error) {
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
           reject(error);
         } else {
           resolve();
@@ -58,4 +64,4 @@ export class CloudinaryService {
     const matches = url.match(/\/v\d+\/([^/]+)\.\w+$/);
     return matches ? matches[1] : null;
   }
-} 
+}

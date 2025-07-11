@@ -78,4 +78,24 @@ export class UserController {
     Logger.debug('>>>> run on upload avt');
     return await this.userService.uploadAvatar(currentUserId, file);
   }
+
+  @Post('upload')
+  @UseGuards(AccessTokenGuard)
+  @UseInterceptors(FileInterceptor('image'))
+  @ZodSerializerDto(UploadAvatarResDTO)
+  async upload(
+    @ActiveUser('userId') currentUserId: number,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
+          new FileTypeValidator({ fileType: '.(jpg|jpeg|png|gif)' }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    Logger.debug('>>>> upload img is running');
+    return await this.userService.upload(file);
+  }
 }
