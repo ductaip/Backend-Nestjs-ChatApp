@@ -87,4 +87,14 @@ export class UserService {
       message: 'Image is uploaded successfully',
     };
   }
+  
+  async getFirebaseToken(userId: number): Promise<string | null> {
+    console.log('get token', userId);
+    return this.userRepository.getFirebaseToken(userId);
+  }
+
+  async setFirebaseToken(userId: number, token: string): Promise<void> {
+    console.log('set token', userId);
+    await this.userRepository.setFirebaseToken(userId, token);
+  }
 }

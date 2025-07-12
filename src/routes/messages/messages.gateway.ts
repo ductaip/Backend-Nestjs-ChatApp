@@ -13,6 +13,9 @@ import { MessagesService } from '../messages/messages.service';
 import { GroupRepo } from '../group/group.repo';
 import { AccessTokenPayload } from 'src/shared/types/jwt.type';
 import { escape } from 'querystring';
+import { SocketStateService } from 'src/shared/services/socket-state.service';
+import { FcmService } from 'src/shared/services/fcm.service';
+import { UserRepository } from '../user/user.repo';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -23,7 +26,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly tokenService: TokenService,
     private readonly conversationRepo: ConversationRepo,
     private readonly groupRepo: GroupRepo,
+    private readonly userRepo: UserRepository,
     private readonly messagesService: MessagesService,
+    private readonly socketStateService: SocketStateService,
+    private readonly fireBaseService: FcmService,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -32,12 +38,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.handshake.headers.authorization?.split('Bearer ')[1] ??
         client.handshake.query.token;
       const user = await this.tokenService.verifyAccessToken(token as string);
-      console.log('on handle connection');
       if (!user) {
         client.disconnect();
         return;
       }
       client.data.user = user;
+
+      this.socketStateService.add(user.userId, client);
 
       // Join conversation rooms
       const conversations = await this.conversationRepo.getConversationList(
@@ -69,6 +76,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(client: Socket) {
+    this.socketStateService.remove(client.data.user?.userId);
     this.logger.log(`User ${client.data.user?.userId} disconnected`);
   }
 
@@ -143,6 +151,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       },
       data.content,
     );
+
+    console.log('message: ', message);
+
+    const receiverId = conversation.participants.find(
+      (participant) => participant.userId !== user.userId,
+    )?.userId;
+
+    const receiverSocket = this.socketStateService.get(receiverId!);
+    if (!receiverSocket) {
+      const fcmToken = await this.userRepo.getFirebaseToken(receiverId!);
+      if (fcmToken) {
+        this.fireBaseService.sendNotification(
+          fcmToken,
+          message.sender.sender_name,
+          message.type === 'text' ? message.content : 'Tin nhắn mới',
+        );
+      }
+    }
 
     this.server
       .to(`${data.roomType}_${data.roomId}`)

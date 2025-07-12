@@ -15,14 +15,15 @@ datasource db {
 
 // Model cho người dùng
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String
-  avatarUrl String?
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password      String
+  name          String
+  firebaseToken String?
+  avatarUrl     String?
   // lastSeen  DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   refreshTokens RefreshToken[]
 
@@ -104,7 +105,7 @@ model Conversation {
   // messages Message[] @relation("ConversationMessages")
 
   // Last message in the conversation
-  lastMessageId Int?     @unique
+  lastMessageId Int? @unique
   // lastMessage   Message? @relation("LastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
 
   // Participants in the conversation
@@ -112,7 +113,7 @@ model Conversation {
 
   // Group
   group   Group? @relation("ConversationGroup", fields: [groupId], references: [id])
-  groupId Int? @unique
+  groupId Int?   @unique
 }
 
 // Model cho người tham gia cuộc trò chuyện (liên kết User và Conversation)
@@ -187,7 +188,7 @@ model Group {
   messages Message[] @relation("GroupMessages")
 
   // Conversation
-  conversation Conversation? @relation("ConversationGroup") 
+  conversation Conversation? @relation("ConversationGroup")
 }
 
 // Model cho thành viên nhóm (liên kết User và Group)

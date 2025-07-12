@@ -72,8 +72,6 @@ export class MessagesService {
     };
     const message = await this.messageRepo.createMessage(messageData);
 
-    // TODO: Mã hóa tin nhắn
-
     // Cập nhật Tin nhắn cuối cùng trong cuộc trò chuyện
     await this.conversationRepo.updateLastMessage(
       conversationId,

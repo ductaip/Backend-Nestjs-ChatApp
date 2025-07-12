@@ -9,6 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { TokenService } from 'src/shared/services/token.service';
 import { FriendRequestService } from './friend-request.service';
+import { SocketStateService } from 'src/shared/services/socket-state.service';
 
 @WebSocketGateway()
 export class FriendRequestGateway
@@ -20,6 +21,7 @@ export class FriendRequestGateway
   constructor(
     private readonly tokenService: TokenService,
     private readonly friendRequestService: FriendRequestService,
+    private readonly socketStateService: SocketStateService,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -32,6 +34,7 @@ export class FriendRequestGateway
         client.disconnect();
         return;
       }
+      this.socketStateService.add(user.userId, client);
       client.data.user = user;
       client.join(`user_${user.userId}`);
       this.logger.log(`User ${user.userId} connected to FriendRequestGateway`);
@@ -42,6 +45,7 @@ export class FriendRequestGateway
   }
 
   handleDisconnect(client: Socket) {
+    this.socketStateService.remove(client.data.user?.userId);
     this.logger.log(`User ${client.data.user?.userId} disconnected`);
   }
 
@@ -65,7 +69,10 @@ export class FriendRequestGateway
     );
     this.server
       .to(`user_${request?.recipientId}`)
-      .emit('friendRequestReceived', request);
+      .emit('friendRequestReceived', {
+        ...request,
+        requester: user,
+      });
   }
 
   @SubscribeMessage('acceptFriendRequest')
@@ -101,7 +108,11 @@ export class FriendRequestGateway
 
     this.server
       .to([`user_${request.requesterId}`, `user_${request.recipientId}`])
-      .emit('friendRequestAccepted', friendship);
+      .emit('friendRequestAccepted', {
+        accepter: friendship.userB,
+        requester: friendship.userA,
+        conversationId: friendship.conversationId,
+      });
   }
 
   @SubscribeMessage('rejectFriendRequest')
@@ -124,6 +135,9 @@ export class FriendRequestGateway
     await this.friendRequestService.rejectRequest(data.requestId, user.userId);
     this.server
       .to(`user_${request.requesterId}`)
-      .emit('friendRequestRejected', request);
+      .emit('friendRequestRejected', {
+        ...request,
+        requester: user,
+      });
   }
 }

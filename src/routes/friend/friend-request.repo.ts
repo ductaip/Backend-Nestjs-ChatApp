@@ -35,6 +35,10 @@ export class FriendRequestRepo {
         userAId: request.requesterId,
         userBId: request.recipientId,
       },
+      include: {
+        userA: true,
+        userB: true
+      }
     });
   }
 

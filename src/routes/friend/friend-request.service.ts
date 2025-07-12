@@ -9,7 +9,7 @@ export class FriendRequestService {
     private readonly conservationService: ConversationService,
     private readonly friendRequestRepo: FriendRequestRepo,
     private readonly authRepository: AuthRepository,
-  ) { }
+  ) {}
 
   async sendRequest(senderId: number, recipientEmail: string) {
     const recipient = await this.authRepository.findUniqueUser({
@@ -57,11 +57,17 @@ export class FriendRequestService {
       throw new HttpException('Invalid friend request', HttpStatus.BAD_REQUEST);
     }
 
-    const response = await this.friendRequestRepo.acceptRequest(requestId, receiverId);
+    const response = await this.friendRequestRepo.acceptRequest(
+      requestId,
+      receiverId,
+    );
     const { userAId, userBId } = response;
 
     // Create conversation
-    const conversation = await this.conservationService.createConversation(userAId, userBId);
+    const conversation = await this.conservationService.createConversation(
+      userAId,
+      userBId,
+    );
 
     return { ...response, conversationId: conversation.id };
   }
@@ -89,5 +95,4 @@ export class FriendRequestService {
   async getPendingRequests(userId: number) {
     return await this.friendRequestRepo.findPendingRequests(userId);
   }
-
 }

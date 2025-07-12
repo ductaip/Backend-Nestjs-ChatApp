@@ -9,6 +9,9 @@ import { ConversationService } from '../conversation/conversation.service';
 import { ConversationRepo } from '../conversation/conversation.repo';
 import { GroupRepo } from '../group/group.repo';
 import { MessagesModule } from '../messages/messages.module';
+import { UserRepository } from '../user/user.repo';
+import { FcmService } from 'src/shared/services/fcm.service';
+import { SocketStateService } from 'src/shared/services/socket-state.service';
 
 @Module({
   providers: [
@@ -18,9 +21,12 @@ import { MessagesModule } from '../messages/messages.module';
     AuthRepository,
     ConversationService,
     ConversationRepo,
-    GroupRepo
+    GroupRepo,
+    UserRepository,
+    FcmService,
+    SocketStateService,
   ],
   controllers: [FriendRequestController],
-  imports: [MessagesModule], 
+  imports: [MessagesModule],
 })
 export class FriendRequestModule {}
