@@ -14,6 +14,7 @@ import { UserModule } from './routes/user/user.module';
 import CustomZodValidationPipe from './shared/pipes/custom-zod-validation.pipe';
 import { MongooseModule } from '@nestjs/mongoose';
 import envConfig from './shared/config';
+import { VoiceCallModule } from './routes/voice-call/voice-call.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import envConfig from './shared/config';
     FriendRequestModule,
     GroupModule,
     UserModule,
+    VoiceCallModule
   ],
   controllers: [AppController],
   providers: [

@@ -11,6 +11,9 @@ import {
   MaxFileSizeValidator,
   FileTypeValidator,
   Logger,
+  Param,
+  ParseIntPipe,
+  Patch,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ZodSerializerDto } from 'nestjs-zod';
@@ -33,20 +36,17 @@ export class UserController {
   @UseGuards(AccessTokenGuard)
   @ZodSerializerDto(UserResDTO)
   async getMe(@ActiveUser('userId') currentUserId: number) {
-    Logger.fatal('run on profile users/me');
-    console.log('test');
     return await this.userService.getProfile(currentUserId);
   }
 
-  @Get()
+  @Get('')
   @UseGuards(AccessTokenGuard)
-  // @ZodSerializerDto(FindUserResDTO)
+  @ZodSerializerDto(FindUserResDTO)
   async getProfileByEmail(
     @ActiveUser('userId') currentUserId: number,
     @Query() query: GetUser,
   ) {
     // TODO: check if that is current user's email
-    Logger.debug('>>>> run on get profile');
     const { email } = query;
     return await this.userService.getProfileByEmail(email, currentUserId);
   }
@@ -97,5 +97,23 @@ export class UserController {
   ) {
     Logger.debug('>>>> upload img is running');
     return await this.userService.upload(file);
+    return await this.userService.uploadAvatar(currentUserId, file);
+  }
+
+  @Get(':id/firebase-token')
+  @UseGuards(AccessTokenGuard)
+  async getFirebaseToken(@Param('id', ParseIntPipe) userId: number) {
+    const token = await this.userService.getFirebaseToken(userId);
+    return { firebaseToken: token };
+  }
+
+  @Patch(':id/firebase-token')
+  @UseGuards(AccessTokenGuard)
+  async setFirebaseToken(
+    @Param('id', ParseIntPipe) userId: number,
+    @Body('token') token: string,
+  ) {
+    await this.userService.setFirebaseToken(userId, token);
+    return { message: 'Firebase token updated successfully' };
   }
 }

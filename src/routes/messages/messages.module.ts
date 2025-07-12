@@ -17,6 +17,8 @@ import {
 } from './schemas/message.schema';
 import { MessagesMongoRepo } from './messages.mongo.repo';
 import { UserRepository } from '../user/user.repo';
+import { FcmService } from 'src/shared/services/fcm.service';
+import { SocketStateService } from 'src/shared/services/socket-state.service';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { UserRepository } from '../user/user.repo';
     GroupRepo,
     MessagesMongoRepo,
     UserRepository,
+    FcmService,
+    SocketStateService
   ],
   controllers: [MessagesController],
   exports: [MessagesMongoRepo],

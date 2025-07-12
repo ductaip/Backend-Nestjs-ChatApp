@@ -23,6 +23,7 @@ const configSchema = z.object({
   AGORA_APP_CERTIFICATE: z.string(),
   PORT: z.string(),
   SECRET_API_KEY: z.string(),
+  FIRE_BASE_KEY: z.string(),
 });
 
 const configServer = configSchema.safeParse(process.env);
